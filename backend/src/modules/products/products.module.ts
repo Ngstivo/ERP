@@ -1,0 +1,16 @@
+import { Module } from '@nestjs/common';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { ProductsService } from './products.service';
+import { ProductsController } from './products.controller';
+import { Product } from '@database/entities/product.entity';
+import { Category } from '@database/entities/category.entity';
+import { UnitOfMeasure } from '@database/entities/unit-of-measure.entity';
+import { Barcode } from '@database/entities/barcode.entity';
+
+@Module({
+    imports: [TypeOrmModule.forFeature([Product, Category, UnitOfMeasure, Barcode])],
+    controllers: [ProductsController],
+    providers: [ProductsService],
+    exports: [ProductsService],
+})
+export class ProductsModule { }
