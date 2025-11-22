@@ -39,43 +39,16 @@ import { WebhookModule } from './modules/webhook/webhook.module';
             },
             {
                 name: 'long',
-                ttl: 60000, // 1 minute
-                limit: 100, // 100 requests per minute
-            },
-        ]),
-
-        // Database
-        TypeOrmModule.forRootAsync({
-            imports: [ConfigModule],
-            useFactory: (configService: ConfigService) => ({
-                type: 'postgres',
-                host: configService.get('DB_HOST'),
-                port: configService.get('DB_PORT'),
-                username: configService.get('DB_USERNAME'),
-                password: configService.get('DB_PASSWORD'),
-                database: configService.get('DB_DATABASE'),
-                entities: [__dirname + '/**/*.entity{.ts,.js}'],
-                synchronize: configService.get('NODE_ENV') === 'development',
-                logging: configService.get('NODE_ENV') === 'development',
-            }),
-            inject: [ConfigService],
-        }),
-
-        // Feature modules
-        AuthModule,
-        UsersModule,
-        ProductsModule,
-        WarehousesModule,
-        InventoryModule,
-        OrdersModule,
-        ReportsModule,
-        BatchesModule,
-        BarcodesModule,
-        GoodsReceiptModule,
-        PurchaseReturnModule,
-        PickingModule,
-        TransferModule,
-        WebhookModule,
+                InventoryModule,
+                OrdersModule,
+                ReportsModule,
+                BatchesModule,
+                BarcodesModule,
+                GoodsReceiptModule,
+                PurchaseReturnModule,
+                PickingModule,
+                TransferModule,
+                WebhookModule,
     ],
 })
 export class AppModule { }
