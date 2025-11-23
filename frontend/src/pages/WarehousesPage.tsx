@@ -9,18 +9,47 @@ import {
     CircularProgress,
 } from '@mui/material';
 import { Add } from '@mui/icons-material';
+import axios from 'axios';
 import { useAppDispatch, useAppSelector } from '../hooks/redux';
 import { fetchWarehouses } from '../store/slices/warehousesSlice';
 import WarehouseDialog from '../components/warehouse/WarehouseDialog';
 
+const API_URL = 'https://erp-backend-68v8.onrender.com/api';
+
 export default function WarehousesPage() {
     const dispatch = useAppDispatch();
     const { warehouses, loading } = useAppSelector((state) => state.warehouses);
+    const { token } = useAppSelector((state) => state.auth);
     const [openDialog, setOpenDialog] = useState(false);
+    const [editingWarehouse, setEditingWarehouse] = useState<any>(null);
 
     useEffect(() => {
         dispatch(fetchWarehouses());
     }, [dispatch]);
+
+    const handleEdit = (warehouse: any) => {
+        setEditingWarehouse(warehouse);
+        setOpenDialog(true);
+    };
+
+    const handleDelete = async (id: string) => {
+        if (window.confirm('Are you sure you want to delete this warehouse?')) {
+            try {
+                await axios.delete(`${API_URL}/warehouses/${id}`, {
+                    headers: { Authorization: `Bearer ${token}` },
+                });
+                dispatch(fetchWarehouses());
+            } catch (error) {
+                console.error('Failed to delete warehouse:', error);
+                alert('Failed to delete warehouse');
+            }
+        }
+    };
+
+    const handleCloseDialog = () => {
+        setOpenDialog(false);
+        setEditingWarehouse(null);
+    };
 
     if (loading) {
         return (
@@ -62,9 +91,28 @@ export default function WarehousesPage() {
                         <Grid item xs={12} md={6} lg={4} key={warehouse.id}>
                             <Card>
                                 <CardContent>
-                                    <Typography variant="h6" gutterBottom fontWeight={600}>
-                                        {warehouse.name}
-                                    </Typography>
+                                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
+                                        <Typography variant="h6" gutterBottom fontWeight={600}>
+                                            {warehouse.name}
+                                        </Typography>
+                                        <Box>
+                                            <Button
+                                                size="small"
+                                                onClick={() => handleEdit(warehouse)}
+                                                sx={{ minWidth: 'auto', p: 0.5, mr: 1 }}
+                                            >
+                                                Edit
+                                            </Button>
+                                            <Button
+                                                size="small"
+                                                color="error"
+                                                onClick={() => handleDelete(warehouse.id)}
+                                                sx={{ minWidth: 'auto', p: 0.5 }}
+                                            >
+                                                Delete
+                                            </Button>
+                                        </Box>
+                                    </Box>
                                     <Typography variant="body2" color="text.secondary" gutterBottom>
                                         Code: {warehouse.code}
                                     </Typography>
@@ -83,7 +131,11 @@ export default function WarehousesPage() {
                 )}
             </Grid>
 
-            <WarehouseDialog open={openDialog} onClose={() => setOpenDialog(false)} />
+            <WarehouseDialog
+                open={openDialog}
+                onClose={handleCloseDialog}
+                warehouse={editingWarehouse}
+            />
         </Box>
     );
 }
