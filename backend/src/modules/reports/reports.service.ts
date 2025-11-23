@@ -190,16 +190,16 @@ export class ReportsService {
     async getWarehouseUtilizationReport(): Promise<WarehouseUtilizationReport[]> {
         const warehouses = await this.warehouseRepository.find({
             where: { isActive: true },
-            relations: ['locations', 'locations.stockLevels'],
+            relations: ['storageLocations', 'storageLocations.stockLevels'],
         });
 
         return warehouses.map((warehouse) => {
-            const totalCapacity = warehouse.locations.reduce(
+            const totalCapacity = warehouse.storageLocations.reduce(
                 (sum, loc) => sum + Number(loc.capacity || 0),
                 0
             );
 
-            const usedCapacity = warehouse.locations.reduce((sum, loc) => {
+            const usedCapacity = warehouse.storageLocations.reduce((sum, loc) => {
                 const locationUsed = loc.stockLevels?.reduce(
                     (locSum, sl) => locSum + Number(sl.quantity),
                     0
