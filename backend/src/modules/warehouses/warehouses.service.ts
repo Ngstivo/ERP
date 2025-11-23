@@ -116,4 +116,15 @@ export class WarehousesService {
                 : 0,
         };
     }
+
+    async activateAllWarehouses(): Promise<{ updated: number }> {
+        const result = await this.warehouseRepository
+            .createQueryBuilder()
+            .update(Warehouse)
+            .set({ isActive: true })
+            .where('isActive IS NULL OR isActive = false')
+            .execute();
+
+        return { updated: result.affected || 0 };
+    }
 }

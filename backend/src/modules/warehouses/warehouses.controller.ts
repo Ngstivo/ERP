@@ -67,6 +67,12 @@ export class WarehousesController {
         return this.warehousesService.update(id, updateWarehouseDto);
     }
 
+    @Post('admin/activate-all')
+    @ApiOperation({ summary: 'Admin: Activate all warehouses (one-time fix)' })
+    activateAll() {
+        return this.warehousesService.activateAllWarehouses();
+    }
+
     @Delete(':id')
     @ApiOperation({ summary: 'Delete warehouse' })
     remove(@Param('id') id: string) {
