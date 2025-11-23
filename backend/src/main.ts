@@ -2,8 +2,12 @@ import { NestFactory } from '@nestjs/core';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { ValidationPipe } from '@nestjs/common';
 import { AppModule } from './app.module';
+import * as dns from 'dns';
 
 async function bootstrap() {
+    // Force IPv4 resolution to avoid ENETUNREACH errors on Render/Supabase
+    dns.setDefaultResultOrder('ipv4first');
+
     const app = await NestFactory.create(AppModule);
 
     // Global prefix
