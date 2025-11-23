@@ -16,7 +16,8 @@ import {
 import axios from 'axios';
 import { useAppSelector } from '../hooks/redux';
 
-const API_URL = import.meta.env.VITE_API_URL || '/api';
+// Hardcoded API URL for stability
+const API_URL = 'https://erp-backend-68v8.onrender.com/api';
 
 interface DashboardMetrics {
     totalWarehouses: number;
@@ -33,6 +34,7 @@ export default function DashboardPage() {
 
     useEffect(() => {
         const fetchMetrics = async () => {
+            setLoading(true);
             try {
                 const response = await axios.get(`${API_URL}/reports/dashboard`, {
                     headers: { Authorization: `Bearer ${token}` },
@@ -46,7 +48,7 @@ export default function DashboardPage() {
         };
 
         fetchMetrics();
-    }, [token]);
+    }, [token]); // Refetches when component mounts
 
     if (loading) {
         return (
