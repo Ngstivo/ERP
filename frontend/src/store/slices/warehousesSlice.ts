@@ -1,7 +1,8 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
 
-const API_URL = import.meta.env.VITE_API_URL || '/api';
+// Hardcoded API URL for stability
+const API_URL = 'https://erp-backend-68v8.onrender.com/api';
 
 interface Warehouse {
     id: string;
