@@ -17,7 +17,10 @@ export class WarehousesService {
     ) { }
 
     async create(createWarehouseDto: CreateWarehouseDto): Promise<Warehouse> {
-        const warehouse = this.warehouseRepository.create(createWarehouseDto);
+        const warehouse = this.warehouseRepository.create({
+            ...createWarehouseDto,
+            isActive: true, // Explicitly set to ensure dashboard counts work
+        });
         return await this.warehouseRepository.save(warehouse);
     }
 
