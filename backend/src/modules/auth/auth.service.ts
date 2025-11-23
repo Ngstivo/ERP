@@ -271,3 +271,4 @@ export class AuthService {
                 return { message: 'Seeding successful. Admin user updated with roles and permissions.' };
             }
         }
+}
