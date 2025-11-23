@@ -83,7 +83,7 @@ export class ReportsService {
             recentMovements,
         ] = await Promise.all([
             this.productRepository.count({ where: { isActive: true } }),
-            this.warehouseRepository.count({ where: { isActive: true } }),
+            this.warehouseRepository.count(), // Count all warehouses (including those with isActive null)
             this.getLowStockCount(),
             this.getExpiringBatchesCount(30), // Next 30 days
             this.transferRepository.count({
