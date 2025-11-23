@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import {
     Box,
     Typography,
@@ -17,10 +17,12 @@ import {
 import { Add } from '@mui/icons-material';
 import { useAppDispatch, useAppSelector } from '../hooks/redux';
 import { fetchProducts } from '../store/slices/productsSlice';
+import ProductDialog from '../components/inventory/ProductDialog';
 
 export default function ProductsPage() {
     const dispatch = useAppDispatch();
     const { products, loading } = useAppSelector((state) => state.products);
+    const [openDialog, setOpenDialog] = useState(false);
 
     useEffect(() => {
         dispatch(fetchProducts());
@@ -45,7 +47,7 @@ export default function ProductsPage() {
                         Manage your product catalog
                     </Typography>
                 </Box>
-                <Button variant="contained" startIcon={<Add />}>
+                <Button variant="contained" startIcon={<Add />} onClick={() => setOpenDialog(true)}>
                     Add Product
                 </Button>
             </Box>
@@ -102,6 +104,8 @@ export default function ProductsPage() {
                     </TableContainer>
                 </CardContent>
             </Card>
+
+            <ProductDialog open={openDialog} onClose={() => setOpenDialog(false)} />
         </Box>
     );
 }

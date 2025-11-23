@@ -35,6 +35,19 @@ export const fetchWarehouses = createAsyncThunk(
     }
 );
 
+export const createWarehouse = createAsyncThunk(
+    'warehouses/create',
+    async (warehouseData: Partial<Warehouse>, { getState }) => {
+        const state = getState() as any;
+        // Hardcoded API URL for stability
+        const API_URL = 'https://erp-backend-68v8.onrender.com/api';
+        const response = await axios.post(`${API_URL}/warehouses`, warehouseData, {
+            headers: { Authorization: `Bearer ${state.auth.token}` },
+        });
+        return response.data;
+    }
+);
+
 const warehousesSlice = createSlice({
     name: 'warehouses',
     initialState,
@@ -51,6 +64,9 @@ const warehousesSlice = createSlice({
             .addCase(fetchWarehouses.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.error.message || 'Failed to fetch warehouses';
+            })
+            .addCase(createWarehouse.fulfilled, (state, action) => {
+                state.warehouses.push(action.payload);
             });
     },
 });

@@ -93,7 +93,7 @@ export default function GoodsReceiptPage() {
                                         </TableCell>
                                     </TableRow>
                                 ) : (
-                                    receipts.map((receipt) => (
+                                    receipts.map((receipt: any) => (
                                         <TableRow key={receipt.id} hover>
                                             <TableCell>{receipt.receiptNumber}</TableCell>
                                             <TableCell>{receipt.purchaseOrder?.orderNumber || '-'}</TableCell>

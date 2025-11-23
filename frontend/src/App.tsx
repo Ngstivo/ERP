@@ -4,12 +4,6 @@ import { useAppDispatch, useAppSelector } from './hooks/redux';
 import { getProfile } from './store/slices/authSlice';
 import Layout from './components/layout/Layout';
 import LoginPage from './pages/LoginPage';
-import { useEffect } from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
-import { useAppDispatch, useAppSelector } from './hooks/redux';
-import { getProfile } from './store/slices/authSlice';
-import Layout from './components/layout/Layout';
-import LoginPage from './pages/LoginPage';
 import DashboardPage from './pages/DashboardPage';
 import ProductsPage from './pages/ProductsPage';
 import WarehousesPage from './pages/WarehousesPage';
@@ -17,6 +11,7 @@ import InventoryPage from './pages/InventoryPage';
 import OrdersPage from './pages/OrdersPage';
 import ReportsPage from './pages/ReportsPage';
 import BatchesPage from './pages/BatchesPage';
+import GoodsReceiptPage from './pages/GoodsReceiptPage';
 
 function App() {
     const dispatch = useAppDispatch();
@@ -47,6 +42,7 @@ function App() {
                 <Route path="/inventory" element={<InventoryPage />} />
                 <Route path="/batches" element={<BatchesPage />} />
                 <Route path="/orders" element={<OrdersPage />} />
+                <Route path="/goods-receipt" element={<GoodsReceiptPage />} />
                 <Route path="/reports" element={<ReportsPage />} />
                 <Route path="*" element={<Navigate to="/dashboard" replace />} />
             </Routes>

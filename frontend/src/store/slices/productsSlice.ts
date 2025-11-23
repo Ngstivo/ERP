@@ -39,6 +39,19 @@ export const fetchProducts = createAsyncThunk(
     }
 );
 
+export const createProduct = createAsyncThunk(
+    'products/create',
+    async (productData: Partial<Product>, { getState }) => {
+        const state = getState() as any;
+        // Hardcoded API URL for stability
+        const API_URL = 'https://erp-backend-68v8.onrender.com/api';
+        const response = await axios.post(`${API_URL}/products`, productData, {
+            headers: { Authorization: `Bearer ${state.auth.token}` },
+        });
+        return response.data;
+    }
+);
+
 const productsSlice = createSlice({
     name: 'products',
     initialState,
@@ -55,6 +68,9 @@ const productsSlice = createSlice({
             .addCase(fetchProducts.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.error.message || 'Failed to fetch products';
+            })
+            .addCase(createProduct.fulfilled, (state, action) => {
+                state.products.push(action.payload);
             });
     },
 });

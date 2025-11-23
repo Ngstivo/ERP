@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import {
     Box,
     Typography,
@@ -11,10 +11,12 @@ import {
 import { Add } from '@mui/icons-material';
 import { useAppDispatch, useAppSelector } from '../hooks/redux';
 import { fetchWarehouses } from '../store/slices/warehousesSlice';
+import WarehouseDialog from '../components/warehouse/WarehouseDialog';
 
 export default function WarehousesPage() {
     const dispatch = useAppDispatch();
     const { warehouses, loading } = useAppSelector((state) => state.warehouses);
+    const [openDialog, setOpenDialog] = useState(false);
 
     useEffect(() => {
         dispatch(fetchWarehouses());
@@ -39,7 +41,7 @@ export default function WarehousesPage() {
                         Manage your warehouse locations
                     </Typography>
                 </Box>
-                <Button variant="contained" startIcon={<Add />}>
+                <Button variant="contained" startIcon={<Add />} onClick={() => setOpenDialog(true)}>
                     Add Warehouse
                 </Button>
             </Box>
@@ -80,6 +82,8 @@ export default function WarehousesPage() {
                     ))
                 )}
             </Grid>
+
+            <WarehouseDialog open={openDialog} onClose={() => setOpenDialog(false)} />
         </Box>
     );
 }

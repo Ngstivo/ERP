@@ -1,3 +1,52 @@
+import { useState } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import {
+    Box,
+    Toolbar,
+    Typography,
+    Divider,
+    List,
+    ListItem,
+    ListItemButton,
+    ListItemIcon,
+    ListItemText,
+    AppBar,
+    IconButton,
+    Avatar,
+    Menu,
+    MenuItem,
+    Drawer,
+} from '@mui/material';
+import {
+    Menu as MenuIcon,
+    Logout,
+    Dashboard,
+    Inventory,
+    Category,
+    Warehouse,
+    Receipt,
+    LocalShipping,
+    Assessment,
+} from '@mui/icons-material';
+import { useAppDispatch, useAppSelector } from '../../hooks/redux';
+import { logout } from '../../store/slices/authSlice';
+
+const drawerWidth = 240;
+
+interface LayoutProps {
+    children: React.ReactNode;
+}
+
+const menuItems = [
+    { text: 'Dashboard', icon: <Dashboard />, path: '/' },
+    { text: 'Inventory', icon: <Inventory />, path: '/inventory' },
+    { text: 'Products', icon: <Category />, path: '/products' },
+    { text: 'Warehouses', icon: <Warehouse />, path: '/warehouses' },
+    { text: 'Goods Receipt', icon: <Receipt />, path: '/goods-receipt' },
+    { text: 'Orders', icon: <LocalShipping />, path: '/orders' },
+    { text: 'Reports', icon: <Assessment />, path: '/reports' },
+];
+
 export default function Layout({ children }: LayoutProps) {
     const [mobileOpen, setMobileOpen] = useState(false);
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);

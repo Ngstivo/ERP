@@ -4,6 +4,7 @@ import productsReducer from './slices/productsSlice';
 import warehousesReducer from './slices/warehousesSlice';
 import inventoryReducer from './slices/inventorySlice';
 import batchesReducer from './slices/batchesSlice';
+import goodsReceiptReducer from './slices/goodsReceiptSlice';
 
 export const store = configureStore({
     reducer: {
@@ -12,6 +13,7 @@ export const store = configureStore({
         warehouses: warehousesReducer,
         inventory: inventoryReducer,
         batches: batchesReducer,
+        goodsReceipt: goodsReceiptReducer,
     },
 });
 
