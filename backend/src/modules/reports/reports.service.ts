@@ -300,7 +300,7 @@ export class ReportsService {
             warehouseName: batch.warehouse.name,
             expirationDate: batch.expirationDate,
             currentQuantity: batch.currentQuantity,
-            daysUntilExpiration: batch.daysUntilExpiration(),
+            daysUntilExpiration: batch.daysUntilExpiration,
             qualityStatus: batch.qualityStatus,
         }));
     }
