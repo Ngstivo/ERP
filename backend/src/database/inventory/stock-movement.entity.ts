@@ -20,6 +20,8 @@ export enum MovementType {
     RETURN = 'RETURN',
     DAMAGE = 'DAMAGE',
     LOSS = 'LOSS',
+    RECEIVE = 'RECEIVE',
+    PICK = 'PICK',
 }
 
 @Entity('stock_movements')
