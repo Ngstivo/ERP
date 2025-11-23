@@ -56,6 +56,11 @@ export class Warehouse {
     @OneToMany(() => StockLevel, (stockLevel) => stockLevel.warehouse)
     stockLevels: StockLevel[];
 
+    // Alias for compatibility
+    get locations(): StorageLocation[] {
+        return this.storageLocations;
+    }
+
     @CreateDateColumn()
     createdAt: Date;
 

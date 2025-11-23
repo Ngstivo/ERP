@@ -11,6 +11,7 @@ import {
 import { Product } from '../entities/product.entity';
 import { Warehouse } from '../entities/warehouse.entity';
 import { StorageLocation } from '../entities/storage-location.entity';
+import { Batch } from '../batches/batch.entity';
 
 @Entity('stock_levels')
 @Index(['product', 'warehouse'], { unique: true })
@@ -29,6 +30,10 @@ export class StockLevel {
     @ManyToOne(() => StorageLocation, { nullable: true })
     @JoinColumn({ name: 'location_id' })
     location: StorageLocation;
+
+    @ManyToOne(() => Batch, { nullable: true })
+    @JoinColumn({ name: 'batch_id' })
+    batch: Batch;
 
     @Column({ type: 'decimal', precision: 10, scale: 2, default: 0 })
     quantity: number;

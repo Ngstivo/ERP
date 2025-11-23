@@ -74,6 +74,11 @@ export class Product {
     @OneToMany(() => Barcode, (barcode) => barcode.product)
     barcodes: Barcode[];
 
+    // Alias for compatibility
+    get price(): number {
+        return this.unitPrice;
+    }
+
     @CreateDateColumn()
     createdAt: Date;
 

@@ -5,12 +5,14 @@ import {
     CreateDateColumn,
     UpdateDateColumn,
     ManyToOne,
+    OneToMany,
     JoinColumn,
     Tree,
     TreeChildren,
     TreeParent,
 } from 'typeorm';
 import { Warehouse } from './warehouse.entity';
+import { StockLevel } from '../inventory/stock-level.entity';
 
 export enum LocationType {
     ZONE = 'ZONE',
@@ -72,6 +74,9 @@ export class StorageLocation {
 
     @Column({ nullable: true })
     barcode: string;
+
+    @OneToMany(() => StockLevel, (stockLevel) => stockLevel.location)
+    stockLevels: StockLevel[];
 
     @CreateDateColumn()
     createdAt: Date;
