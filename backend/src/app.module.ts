@@ -60,6 +60,9 @@ import { WebhookModule } from './modules/webhook/webhook.module';
                         ssl: {
                             rejectUnauthorized: false,
                         },
+                        extra: {
+                            family: 4, // Force IPv4
+                        },
                         logging: configService.get('NODE_ENV') === 'development',
                     };
                 }
