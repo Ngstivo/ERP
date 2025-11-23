@@ -22,9 +22,12 @@ const API_URL = 'https://erp-backend-68v8.onrender.com/api';
 interface DashboardMetrics {
     totalWarehouses: number;
     totalProducts: number;
-    totalQuantity: number;
-    totalInventoryValue: number;
-    lowStockAlerts: number;
+    totalStockValue: number;
+    lowStockItems: number;
+    expiringBatches: number;
+    pendingTransfers: number;
+    recentMovements: number;
+    warehouseUtilization: number;
 }
 
 export default function DashboardPage() {
@@ -72,14 +75,14 @@ export default function DashboardPage() {
             color: '#2e7d32',
         },
         {
-            title: 'Total Inventory Value',
-            value: `$${(metrics?.totalInventoryValue || 0).toLocaleString()}`,
+            title: 'Total Stock Value',
+            value: `$${(metrics?.totalStockValue || 0).toLocaleString()}`,
             icon: <TrendingUp sx={{ fontSize: 40 }} />,
             color: '#ed6c02',
         },
         {
-            title: 'Low Stock Alerts',
-            value: metrics?.lowStockAlerts || 0,
+            title: 'Low Stock Items',
+            value: metrics?.lowStockItems || 0,
             icon: <Warning sx={{ fontSize: 40 }} />,
             color: '#d32f2f',
         },
