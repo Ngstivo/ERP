@@ -100,4 +100,32 @@ export class AuthService {
         const { password, ...result } = user;
         return result;
     }
+
+    async seed() {
+        // Simple check if admin exists
+        const admin = await this.userRepository.findOne({ where: { email: 'admin@erp.com' } });
+        if (admin) {
+            return { message: 'Database already seeded' };
+        }
+
+        // Create Admin Role
+        // Note: This is a simplified seed for the MVP fix. 
+        // Ideally we should reuse the logic from seeds/seed.ts but that requires more imports.
+        // For now, we'll just create the admin user to allow login.
+
+        const hashedPassword = await bcrypt.hash('Admin@123', 10);
+
+        const user = this.userRepository.create({
+            email: 'admin@erp.com',
+            firstName: 'Admin',
+            lastName: 'User',
+            password: hashedPassword,
+            isActive: true,
+            roles: [], // Roles will be empty for now, but login should work
+        });
+
+        await this.userRepository.save(user);
+
+        return { message: 'Seeding successful. Admin user created.' };
+    }
 }

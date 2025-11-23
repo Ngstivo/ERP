@@ -56,7 +56,7 @@ import { WebhookModule } from './modules/webhook/webhook.module';
                         type: 'postgres',
                         url: databaseUrl,
                         entities: [__dirname + '/**/*.entity{.ts,.js}'],
-                        synchronize: configService.get('NODE_ENV') === 'development',
+                        synchronize: true, // Enabled for MVP deployment to ensure tables exist
                         ssl: {
                             rejectUnauthorized: false,
                         },
