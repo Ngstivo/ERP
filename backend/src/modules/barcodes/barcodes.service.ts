@@ -3,9 +3,18 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Barcode, BarcodeType } from '@database/entities/barcode.entity';
 import { Product } from '@database/entities/product.entity';
-import * as JsBarcode from 'jsbarcode';
+import JsBarcode from 'jsbarcode';
 import * as QRCode from 'qrcode';
-import { createCanvas } from 'canvas';
+
+// Canvas is optional - only import if available
+let createCanvas: any;
+try {
+    const canvas = require('canvas');
+    createCanvas = canvas.createCanvas;
+} catch (e) {
+    // Canvas not available in serverless environment
+    createCanvas = null;
+}
 
 @Injectable()
 export class BarcodesService {
@@ -84,6 +93,9 @@ export class BarcodesService {
             }
         } else {
             // Generate barcode using JsBarcode
+            if (!createCanvas) {
+                throw new BadRequestException('Barcode generation not available in this environment');
+            }
             try {
                 const canvas = createCanvas(300, 100);
                 JsBarcode(canvas, code, {

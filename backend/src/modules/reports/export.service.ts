@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import * as PDFDocument from 'pdfkit';
-import * as ExcelJS from 'exceljs';
+import PDFDocument from 'pdfkit';
+import ExcelJS from 'exceljs';
 import { Response } from 'express';
 
 export interface ExportOptions {
