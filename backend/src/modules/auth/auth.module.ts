@@ -9,11 +9,12 @@ import { JwtStrategy } from './strategies/jwt.strategy';
 import { LocalStrategy } from './strategies/local.strategy';
 import { User } from '@database/entities/user.entity';
 import { Role } from '@database/entities/role.entity';
-import { Permission } from '@database/entities/permission.entity';
+import { Category } from '@database/entities/category.entity';
+import { UnitOfMeasure } from '@database/entities/unit-of-measure.entity';
 
 @Module({
     imports: [
-        TypeOrmModule.forFeature([User, Role, Permission]),
+        TypeOrmModule.forFeature([User, Role, Permission, Category, UnitOfMeasure]),
         PassportModule,
         JwtModule.registerAsync({
             imports: [ConfigModule],

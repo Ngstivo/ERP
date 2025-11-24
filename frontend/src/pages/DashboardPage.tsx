@@ -6,12 +6,14 @@ import {
     CardContent,
     Typography,
     CircularProgress,
+    Button,
 } from '@mui/material';
 import {
     Inventory,
     Warehouse,
     TrendingUp,
     Warning,
+    Storage,
 } from '@mui/icons-material';
 import axios from 'axios';
 import { useAppSelector } from '../hooks/redux';
@@ -51,7 +53,21 @@ export default function DashboardPage() {
         };
 
         fetchMetrics();
+        fetchMetrics();
     }, [token]); // Refetches when component mounts
+
+    const handleSeed = async () => {
+        try {
+            await axios.post(`${API_URL}/auth/seed`, {}, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+            alert('System data seeded successfully! You can now create products.');
+            window.location.reload();
+        } catch (error) {
+            console.error('Failed to seed data:', error);
+            alert('Failed to seed data');
+        }
+    };
 
     if (loading) {
         return (
@@ -144,6 +160,15 @@ export default function DashboardPage() {
                             <Typography variant="h6" gutterBottom fontWeight={600}>
                                 Quick Actions
                             </Typography>
+                            <Button
+                                variant="outlined"
+                                startIcon={<Storage />}
+                                fullWidth
+                                onClick={handleSeed}
+                                sx={{ mb: 2 }}
+                            >
+                                Seed System Data
+                            </Button>
                             <Typography variant="body2" color="text.secondary">
                                 • Add new product
                             </Typography>

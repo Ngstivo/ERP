@@ -7,6 +7,7 @@ import {
     Button,
     TextField,
     Grid,
+    MenuItem,
 } from '@mui/material';
 import axios from 'axios';
 import { useAppDispatch, useAppSelector } from '../../hooks/redux';
@@ -23,6 +24,9 @@ interface ProductDialogProps {
 export default function ProductDialog({ open, onClose, product }: ProductDialogProps) {
     const dispatch = useAppDispatch();
     const { token } = useAppSelector((state) => state.auth);
+    const [categories, setCategories] = useState<any[]>([]);
+    const [uoms, setUoms] = useState<any[]>([]);
+
     const [formData, setFormData] = useState({
         name: '',
         sku: '',
@@ -30,7 +34,15 @@ export default function ProductDialog({ open, onClose, product }: ProductDialogP
         unitPrice: '',
         costPrice: '',
         reorderPoint: '',
+        category: '',
+        unitOfMeasure: '',
     });
+
+    useEffect(() => {
+        if (open) {
+            fetchMetadata();
+        }
+    }, [open]);
 
     useEffect(() => {
         if (product) {
@@ -41,11 +53,35 @@ export default function ProductDialog({ open, onClose, product }: ProductDialogP
                 unitPrice: product.unitPrice?.toString() || '',
                 costPrice: product.costPrice?.toString() || '',
                 reorderPoint: product.reorderPoint?.toString() || '',
+                category: product.category?.id || '',
+                unitOfMeasure: product.unitOfMeasure?.id || '',
             });
         } else {
-            setFormData({ name: '', sku: '', description: '', unitPrice: '', costPrice: '', reorderPoint: '' });
+            setFormData({
+                name: '',
+                sku: '',
+                description: '',
+                unitPrice: '',
+                costPrice: '',
+                reorderPoint: '',
+                category: '',
+                unitOfMeasure: '',
+            });
         }
     }, [product, open]);
+
+    const fetchMetadata = async () => {
+        try {
+            const [catRes, uomRes] = await Promise.all([
+                axios.get(`${API_URL}/products/categories`, { headers: { Authorization: `Bearer ${token}` } }),
+                axios.get(`${API_URL}/products/uom`, { headers: { Authorization: `Bearer ${token}` } }),
+            ]);
+            setCategories(catRes.data);
+            setUoms(uomRes.data);
+        } catch (error) {
+            console.error('Failed to fetch metadata:', error);
+        }
+    };
 
     const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -73,7 +109,7 @@ export default function ProductDialog({ open, onClose, product }: ProductDialogP
             onClose();
         } catch (error) {
             console.error('Failed to save product:', error);
-            alert('Failed to save product');
+            alert('Failed to save product. Please ensure all required fields are filled.');
         }
     };
 
@@ -100,6 +136,38 @@ export default function ProductDialog({ open, onClose, product }: ProductDialogP
                             value={formData.name}
                             onChange={handleChange}
                         />
+                    </Grid>
+                    <Grid item xs={12} sm={6}>
+                        <TextField
+                            select
+                            name="category"
+                            label="Category"
+                            fullWidth
+                            value={formData.category}
+                            onChange={handleChange}
+                        >
+                            {categories.map((cat) => (
+                                <MenuItem key={cat.id} value={cat.id}>
+                                    {cat.name}
+                                </MenuItem>
+                            ))}
+                        </TextField>
+                    </Grid>
+                    <Grid item xs={12} sm={6}>
+                        <TextField
+                            select
+                            name="unitOfMeasure"
+                            label="Unit of Measure"
+                            fullWidth
+                            value={formData.unitOfMeasure}
+                            onChange={handleChange}
+                        >
+                            {uoms.map((uom) => (
+                                <MenuItem key={uom.id} value={uom.id}>
+                                    {uom.name} ({uom.code})
+                                </MenuItem>
+                            ))}
+                        </TextField>
                     </Grid>
                     <Grid item xs={12}>
                         <TextField
@@ -146,7 +214,11 @@ export default function ProductDialog({ open, onClose, product }: ProductDialogP
             </DialogContent>
             <DialogActions>
                 <Button onClick={onClose}>Cancel</Button>
-                <Button onClick={handleSubmit} variant="contained">
+                <Button
+                    onClick={handleSubmit}
+                    variant="contained"
+                    disabled={!formData.name || !formData.sku || !formData.category || !formData.unitOfMeasure}
+                >
                     {product ? 'Update' : 'Create'}
                 </Button>
             </DialogActions>

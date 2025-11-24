@@ -28,6 +28,18 @@ export class ProductsController {
         return this.productsService.create(createProductDto);
     }
 
+    @Get('categories')
+    @ApiOperation({ summary: 'Get all categories' })
+    findAllCategories() {
+        return this.productsService.findAllCategories();
+    }
+
+    @Get('uom')
+    @ApiOperation({ summary: 'Get all units of measure' })
+    findAllUOMs() {
+        return this.productsService.findAllUOMs();
+    }
+
     @Get()
     @ApiOperation({ summary: 'Get all products' })
     @ApiQuery({ name: 'search', required: false })

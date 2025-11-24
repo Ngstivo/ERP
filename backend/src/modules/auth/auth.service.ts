@@ -6,6 +6,8 @@ import * as bcrypt from 'bcrypt';
 import { User } from '@database/entities/user.entity';
 import { Role } from '@database/entities/role.entity';
 import { Permission } from '@database/entities/permission.entity';
+import { Category } from '@database/entities/category.entity';
+import { UnitOfMeasure } from '@database/entities/unit-of-measure.entity';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
 
@@ -18,6 +20,10 @@ export class AuthService {
         private roleRepository: Repository<Role>,
         @InjectRepository(Permission)
         private permissionRepository: Repository<Permission>,
+        @InjectRepository(Category)
+        private categoryRepository: Repository<Category>,
+        @InjectRepository(UnitOfMeasure)
+        private uomRepository: Repository<UnitOfMeasure>,
         private jwtService: JwtService,
     ) { }
 
@@ -164,6 +170,37 @@ export class AuthService {
             await this.userRepository.save(adminUser);
         }
 
-        return { message: 'Seeding successful. Admin user updated with roles and permissions.' };
+        // 4. Seed Categories
+        const categories = [
+            { name: 'Electronics', description: 'Electronic devices and accessories' },
+            { name: 'Office Supplies', description: 'Stationery and office equipment' },
+            { name: 'Furniture', description: 'Office and warehouse furniture' },
+            { name: 'Raw Materials', description: 'Materials for production' },
+        ];
+
+        for (const cat of categories) {
+            const existing = await this.categoryRepository.findOne({ where: { name: cat.name } });
+            if (!existing) {
+                await this.categoryRepository.save(this.categoryRepository.create(cat));
+            }
+        }
+
+        // 5. Seed Units of Measure
+        const uoms = [
+            { name: 'Piece', code: 'PCS', description: 'Individual item' },
+            { name: 'Box', code: 'BOX', description: 'Box of items' },
+            { name: 'Kilogram', code: 'KG', description: 'Weight in kilograms' },
+            { name: 'Liter', code: 'L', description: 'Volume in liters' },
+            { name: 'Meter', code: 'M', description: 'Length in meters' },
+        ];
+
+        for (const uom of uoms) {
+            const existing = await this.uomRepository.findOne({ where: { code: uom.code } });
+            if (!existing) {
+                await this.uomRepository.save(this.uomRepository.create(uom));
+            }
+        }
+
+        return { message: 'Seeding successful. Admin user, roles, permissions, categories, and UOMs updated.' };
     }
 }

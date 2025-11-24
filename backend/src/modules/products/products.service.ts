@@ -2,6 +2,8 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Like } from 'typeorm';
 import { Product } from '@database/entities/product.entity';
+import { Category } from '@database/entities/category.entity';
+import { UnitOfMeasure } from '@database/entities/unit-of-measure.entity';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 
@@ -10,6 +12,10 @@ export class ProductsService {
     constructor(
         @InjectRepository(Product)
         private productRepository: Repository<Product>,
+        @InjectRepository(Category)
+        private categoryRepository: Repository<Category>,
+        @InjectRepository(UnitOfMeasure)
+        private uomRepository: Repository<UnitOfMeasure>,
     ) { }
 
     async create(createProductDto: CreateProductDto): Promise<Product> {
@@ -88,5 +94,12 @@ export class ProductsService {
         }
 
         return await query.getMany();
+    }
+    async findAllCategories(): Promise<Category[]> {
+        return await this.categoryRepository.find();
+    }
+
+    async findAllUOMs(): Promise<UnitOfMeasure[]> {
+        return await this.uomRepository.find();
     }
 }
