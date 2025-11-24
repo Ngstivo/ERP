@@ -187,15 +187,15 @@ export class AuthService {
 
         // 5. Seed Units of Measure
         const uoms = [
-            { name: 'Piece', code: 'PCS', description: 'Individual item' },
-            { name: 'Box', code: 'BOX', description: 'Box of items' },
-            { name: 'Kilogram', code: 'KG', description: 'Weight in kilograms' },
-            { name: 'Liter', code: 'L', description: 'Volume in liters' },
-            { name: 'Meter', code: 'M', description: 'Length in meters' },
+            { name: 'Piece', abbreviation: 'PCS', description: 'Individual item' },
+            { name: 'Box', abbreviation: 'BOX', description: 'Box of items' },
+            { name: 'Kilogram', abbreviation: 'KG', description: 'Weight in kilograms' },
+            { name: 'Liter', abbreviation: 'L', description: 'Volume in liters' },
+            { name: 'Meter', abbreviation: 'M', description: 'Length in meters' },
         ];
 
         for (const uom of uoms) {
-            const existing = await this.uomRepository.findOne({ where: { code: uom.code } });
+            const existing = await this.uomRepository.findOne({ where: { abbreviation: uom.abbreviation } });
             if (!existing) {
                 await this.uomRepository.save(this.uomRepository.create(uom));
             }
