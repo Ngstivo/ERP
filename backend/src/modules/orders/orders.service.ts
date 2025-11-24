@@ -31,6 +31,14 @@ export class OrdersService {
     }
 
     async create(orderData: Partial<PurchaseOrder>, userId: string): Promise<PurchaseOrder> {
+        // Calculate totalPrice for each item
+        if (orderData.items) {
+            orderData.items = orderData.items.map(item => ({
+                ...item,
+                totalPrice: Number(item.quantity) * Number(item.unitPrice),
+            }));
+        }
+
         const order = this.purchaseOrderRepository.create({
             ...orderData,
             orderNumber: `PO-${Date.now()}`,
