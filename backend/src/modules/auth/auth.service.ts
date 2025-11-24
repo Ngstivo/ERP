@@ -172,14 +172,14 @@ export class AuthService {
 
         // 4. Seed Categories
         const categories = [
-            { name: 'Electronics', description: 'Electronic devices and accessories' },
-            { name: 'Office Supplies', description: 'Stationery and office equipment' },
-            { name: 'Furniture', description: 'Office and warehouse furniture' },
-            { name: 'Raw Materials', description: 'Materials for production' },
+            { name: 'Electronics', code: 'ELEC', description: 'Electronic devices and accessories' },
+            { name: 'Office Supplies', code: 'OFF', description: 'Stationery and office equipment' },
+            { name: 'Furniture', code: 'FURN', description: 'Office and warehouse furniture' },
+            { name: 'Raw Materials', code: 'RAW', description: 'Materials for production' },
         ];
 
         for (const cat of categories) {
-            const existing = await this.categoryRepository.findOne({ where: { name: cat.name } });
+            const existing = await this.categoryRepository.findOne({ where: { code: cat.code } });
             if (!existing) {
                 await this.categoryRepository.save(this.categoryRepository.create(cat));
             }
