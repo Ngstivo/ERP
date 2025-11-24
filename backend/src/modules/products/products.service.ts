@@ -13,7 +13,10 @@ export class ProductsService {
     ) { }
 
     async create(createProductDto: CreateProductDto): Promise<Product> {
-        const product = this.productRepository.create(createProductDto);
+        const product = this.productRepository.create({
+            ...createProductDto,
+            isActive: true, // Explicitly set to ensure dashboard counts work
+        });
         return await this.productRepository.save(product);
     }
 

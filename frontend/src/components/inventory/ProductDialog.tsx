@@ -1,4 +1,4 @@
-import { useState, ChangeEvent } from 'react';
+import { useState, useEffect, ChangeEvent } from 'react';
 import {
     Dialog,
     DialogTitle,
@@ -8,16 +8,21 @@ import {
     TextField,
     Grid,
 } from '@mui/material';
-import { useAppDispatch } from '../../hooks/redux';
-import { createProduct } from '../../store/slices/productsSlice';
+import axios from 'axios';
+import { useAppDispatch, useAppSelector } from '../../hooks/redux';
+import { createProduct, fetchProducts } from '../../store/slices/productsSlice';
+
+const API_URL = 'https://erp-backend-68v8.onrender.com/api';
 
 interface ProductDialogProps {
     open: boolean;
     onClose: () => void;
+    product?: any;
 }
 
-export default function ProductDialog({ open, onClose }: ProductDialogProps) {
+export default function ProductDialog({ open, onClose, product }: ProductDialogProps) {
     const dispatch = useAppDispatch();
+    const { token } = useAppSelector((state) => state.auth);
     const [formData, setFormData] = useState({
         name: '',
         sku: '',
@@ -27,24 +32,54 @@ export default function ProductDialog({ open, onClose }: ProductDialogProps) {
         reorderPoint: '',
     });
 
+    useEffect(() => {
+        if (product) {
+            setFormData({
+                name: product.name || '',
+                sku: product.sku || '',
+                description: product.description || '',
+                unitPrice: product.unitPrice?.toString() || '',
+                costPrice: product.costPrice?.toString() || '',
+                reorderPoint: product.reorderPoint?.toString() || '',
+            });
+        } else {
+            setFormData({ name: '', sku: '', description: '', unitPrice: '', costPrice: '', reorderPoint: '' });
+        }
+    }, [product, open]);
+
     const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
     };
 
     const handleSubmit = async () => {
-        await dispatch(createProduct({
-            ...formData,
-            unitPrice: Number(formData.unitPrice),
-            costPrice: Number(formData.costPrice),
-            reorderPoint: Number(formData.reorderPoint),
-        }));
-        onClose();
-        setFormData({ name: '', sku: '', description: '', unitPrice: '', costPrice: '', reorderPoint: '' });
+        try {
+            const payload = {
+                ...formData,
+                unitPrice: Number(formData.unitPrice),
+                costPrice: Number(formData.costPrice),
+                reorderPoint: Number(formData.reorderPoint),
+            };
+
+            if (product) {
+                // Update existing product
+                await axios.patch(`${API_URL}/products/${product.id}`, payload, {
+                    headers: { Authorization: `Bearer ${token}` },
+                });
+            } else {
+                // Create new product
+                await dispatch(createProduct(payload));
+            }
+            dispatch(fetchProducts());
+            onClose();
+        } catch (error) {
+            console.error('Failed to save product:', error);
+            alert('Failed to save product');
+        }
     };
 
     return (
         <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
-            <DialogTitle>Add New Product</DialogTitle>
+            <DialogTitle>{product ? 'Edit Product' : 'Add New Product'}</DialogTitle>
             <DialogContent>
                 <Grid container spacing={2} sx={{ mt: 1 }}>
                     <Grid item xs={12} sm={6}>
@@ -54,6 +89,7 @@ export default function ProductDialog({ open, onClose }: ProductDialogProps) {
                             fullWidth
                             value={formData.sku}
                             onChange={handleChange}
+                            disabled={!!product}
                         />
                     </Grid>
                     <Grid item xs={12} sm={6}>
@@ -110,7 +146,9 @@ export default function ProductDialog({ open, onClose }: ProductDialogProps) {
             </DialogContent>
             <DialogActions>
                 <Button onClick={onClose}>Cancel</Button>
-                <Button onClick={handleSubmit} variant="contained">Create</Button>
+                <Button onClick={handleSubmit} variant="contained">
+                    {product ? 'Update' : 'Create'}
+                </Button>
             </DialogActions>
         </Dialog>
     );

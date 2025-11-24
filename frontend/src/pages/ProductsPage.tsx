@@ -15,18 +15,47 @@ import {
     CircularProgress,
 } from '@mui/material';
 import { Add } from '@mui/icons-material';
+import axios from 'axios';
 import { useAppDispatch, useAppSelector } from '../hooks/redux';
 import { fetchProducts } from '../store/slices/productsSlice';
 import ProductDialog from '../components/inventory/ProductDialog';
 
+const API_URL = 'https://erp-backend-68v8.onrender.com/api';
+
 export default function ProductsPage() {
     const dispatch = useAppDispatch();
     const { products, loading } = useAppSelector((state) => state.products);
+    const { token } = useAppSelector((state) => state.auth);
     const [openDialog, setOpenDialog] = useState(false);
+    const [editingProduct, setEditingProduct] = useState<any>(null);
 
     useEffect(() => {
         dispatch(fetchProducts());
     }, [dispatch]);
+
+    const handleEdit = (product: any) => {
+        setEditingProduct(product);
+        setOpenDialog(true);
+    };
+
+    const handleDelete = async (id: string) => {
+        if (window.confirm('Are you sure you want to delete this product?')) {
+            try {
+                await axios.delete(`${API_URL}/products/${id}`, {
+                    headers: { Authorization: `Bearer ${token}` },
+                });
+                dispatch(fetchProducts());
+            } catch (error) {
+                console.error('Failed to delete product:', error);
+                alert('Failed to delete product');
+            }
+        }
+    };
+
+    const handleCloseDialog = () => {
+        setOpenDialog(false);
+        setEditingProduct(null);
+    };
 
     if (loading) {
         return (
@@ -65,6 +94,7 @@ export default function ProductsPage() {
                                     <TableCell align="right">Cost Price</TableCell>
                                     <TableCell align="right">Reorder Point</TableCell>
                                     <TableCell>Status</TableCell>
+                                    <TableCell align="right">Actions</TableCell>
                                 </TableRow>
                             </TableHead>
                             <TableBody>
@@ -96,6 +126,22 @@ export default function ProductsPage() {
                                                     size="small"
                                                 />
                                             </TableCell>
+                                            <TableCell align="right">
+                                                <Button
+                                                    size="small"
+                                                    onClick={() => handleEdit(product)}
+                                                    sx={{ mr: 1 }}
+                                                >
+                                                    Edit
+                                                </Button>
+                                                <Button
+                                                    size="small"
+                                                    color="error"
+                                                    onClick={() => handleDelete(product.id)}
+                                                >
+                                                    Delete
+                                                </Button>
+                                            </TableCell>
                                         </TableRow>
                                     ))
                                 )}
@@ -105,7 +151,11 @@ export default function ProductsPage() {
                 </CardContent>
             </Card>
 
-            <ProductDialog open={openDialog} onClose={() => setOpenDialog(false)} />
+            <ProductDialog
+                open={openDialog}
+                onClose={handleCloseDialog}
+                product={editingProduct}
+            />
         </Box>
     );
 }
