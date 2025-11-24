@@ -35,7 +35,6 @@ export const fetchGoodsReceipts = createAsyncThunk(
         });
         return response.data;
     }
-    }
 );
 
 export const createGoodsReceipt = createAsyncThunk(
