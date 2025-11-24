@@ -17,6 +17,7 @@ import {
 } from '@mui/icons-material';
 import axios from 'axios';
 import { useAppSelector } from '../hooks/redux';
+import { showSuccess, showError } from '../utils/toast';
 
 // Hardcoded API URL for stability
 const API_URL = 'https://erp-backend-68v8.onrender.com/api';
@@ -61,11 +62,10 @@ export default function DashboardPage() {
             await axios.post(`${API_URL}/auth/seed`, {}, {
                 headers: { Authorization: `Bearer ${token}` },
             });
-            alert('System data seeded successfully! You can now create products.');
+            showSuccess('System data seeded successfully! You can now create products.');
             window.location.reload();
         } catch (error) {
-            console.error('Failed to seed data:', error);
-            alert('Failed to seed data');
+            showError(error);
         }
     };
 

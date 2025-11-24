@@ -12,6 +12,7 @@ import {
 import axios from 'axios';
 import { useAppDispatch, useAppSelector } from '../../hooks/redux';
 import { createProduct, fetchProducts } from '../../store/slices/productsSlice';
+import { showSuccess, showError } from '../../utils/toast';
 
 const API_URL = 'https://erp-backend-68v8.onrender.com/api';
 
@@ -106,10 +107,10 @@ export default function ProductDialog({ open, onClose, product }: ProductDialogP
                 await dispatch(createProduct(payload));
             }
             dispatch(fetchProducts());
+            showSuccess(product ? 'Product updated successfully!' : 'Product created successfully!');
             onClose();
         } catch (error) {
-            console.error('Failed to save product:', error);
-            alert('Failed to save product. Please ensure all required fields are filled.');
+            showError(error);
         }
     };
 

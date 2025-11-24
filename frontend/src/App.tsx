@@ -12,6 +12,8 @@ import OrdersPage from './pages/OrdersPage';
 import ReportsPage from './pages/ReportsPage';
 import BatchesPage from './pages/BatchesPage';
 import GoodsReceiptPage from './pages/GoodsReceiptPage';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 function App() {
     const dispatch = useAppDispatch();
@@ -33,20 +35,23 @@ function App() {
     }
 
     return (
-        <Layout>
-            <Routes>
-                <Route path="/" element={<Navigate to="/dashboard" replace />} />
-                <Route path="/dashboard" element={<DashboardPage />} />
-                <Route path="/products" element={<ProductsPage />} />
-                <Route path="/warehouses" element={<WarehousesPage />} />
-                <Route path="/inventory" element={<InventoryPage />} />
-                <Route path="/batches" element={<BatchesPage />} />
-                <Route path="/orders" element={<OrdersPage />} />
-                <Route path="/goods-receipt" element={<GoodsReceiptPage />} />
-                <Route path="/reports" element={<ReportsPage />} />
-                <Route path="*" element={<Navigate to="/dashboard" replace />} />
-            </Routes>
-        </Layout>
+        <>
+            <ToastContainer />
+            <Layout>
+                <Routes>
+                    <Route path="/" element={<Navigate to="/dashboard" replace />} />
+                    <Route path="/dashboard" element={<DashboardPage />} />
+                    <Route path="/products" element={<ProductsPage />} />
+                    <Route path="/warehouses" element={<WarehousesPage />} />
+                    <Route path="/inventory" element={<InventoryPage />} />
+                    <Route path="/batches" element={<BatchesPage />} />
+                    <Route path="/orders" element={<OrdersPage />} />
+                    <Route path="/goods-receipt" element={<GoodsReceiptPage />} />
+                    <Route path="/reports" element={<ReportsPage />} />
+                    <Route path="*" element={<Navigate to="/dashboard" replace />} />
+                </Routes>
+            </Layout>
+        </>
     );
 }
 

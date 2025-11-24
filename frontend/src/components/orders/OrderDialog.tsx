@@ -17,6 +17,7 @@ import axios from 'axios';
 import { useAppDispatch, useAppSelector } from '../../hooks/redux';
 import { fetchProducts } from '../../store/slices/productsSlice';
 import { fetchWarehouses } from '../../store/slices/warehousesSlice';
+import { showSuccess, showError } from '../../utils/toast';
 
 const API_URL = 'https://erp-backend-68v8.onrender.com/api';
 
@@ -80,10 +81,9 @@ export default function OrderDialog({ open, onClose }: OrderDialogProps) {
                 { headers: { Authorization: `Bearer ${token}` } }
             );
             onClose();
-            alert('Purchase Order created successfully!');
+            showSuccess('Purchase Order created successfully!');
         } catch (error) {
-            console.error('Failed to create order:', error);
-            alert('Failed to create order');
+            showError(error);
         }
     };
 

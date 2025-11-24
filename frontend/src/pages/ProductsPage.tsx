@@ -19,6 +19,7 @@ import axios from 'axios';
 import { useAppDispatch, useAppSelector } from '../hooks/redux';
 import { fetchProducts } from '../store/slices/productsSlice';
 import ProductDialog from '../components/inventory/ProductDialog';
+import { showSuccess, showError, showWarning } from '../utils/toast';
 
 const API_URL = 'https://erp-backend-68v8.onrender.com/api';
 
@@ -39,16 +40,17 @@ export default function ProductsPage() {
     };
 
     const handleDelete = async (id: string) => {
-        if (window.confirm('Are you sure you want to delete this product?')) {
-            try {
-                await axios.delete(`${API_URL}/products/${id}`, {
-                    headers: { Authorization: `Bearer ${token}` },
-                });
-                dispatch(fetchProducts());
-            } catch (error) {
-                console.error('Failed to delete product:', error);
-                alert('Failed to delete product');
-            }
+        if (!window.confirm('Are you sure you want to delete this product?')) {
+            return;
+        }
+        try {
+            await axios.delete(`${API_URL}/products/${id}`, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+            dispatch(fetchProducts());
+            showSuccess('Product deleted successfully!');
+        } catch (error) {
+            showError(error);
         }
     };
 
