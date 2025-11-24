@@ -30,7 +30,7 @@ export class AuthController {
         return this.authService.getProfile(req.user.sub);
     }
 
-    @Get('seed')
+    @Post('seed')
     @ApiOperation({ summary: 'Seed database (Temporary)' })
     async seed() {
         return this.authService.seed();
