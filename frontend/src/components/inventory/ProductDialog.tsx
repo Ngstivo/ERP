@@ -8,6 +8,7 @@ import {
     TextField,
     Grid,
     MenuItem,
+    CircularProgress,
 } from '@mui/material';
 import axios from 'axios';
 import { useAppDispatch, useAppSelector } from '../../hooks/redux';
@@ -48,6 +49,9 @@ export default function ProductDialog({ open, onClose, product }: ProductDialogP
         costPrice: '',
         reorderPoint: '',
     });
+
+    const [loading, setLoading] = useState(false);
+    const [loadingMetadata, setLoadingMetadata] = useState(false);
 
     useEffect(() => {
         if (open) {
@@ -92,6 +96,7 @@ export default function ProductDialog({ open, onClose, product }: ProductDialogP
     }, [product, open]);
 
     const fetchMetadata = async () => {
+        setLoadingMetadata(true);
         try {
             const [catRes, uomRes] = await Promise.all([
                 axios.get(`${API_URL}/products/categories`, { headers: { Authorization: `Bearer ${token}` } }),
@@ -101,6 +106,8 @@ export default function ProductDialog({ open, onClose, product }: ProductDialogP
             setUoms(uomRes.data);
         } catch (error) {
             showError('Failed to load categories and units of measure');
+        } finally {
+            setLoadingMetadata(false);
         }
     };
 
@@ -168,6 +175,7 @@ export default function ProductDialog({ open, onClose, product }: ProductDialogP
             return;
         }
 
+        setLoading(true);
         try {
             const payload = {
                 ...formData,
@@ -190,143 +198,161 @@ export default function ProductDialog({ open, onClose, product }: ProductDialogP
             onClose();
         } catch (error) {
             showError(error);
+        } finally {
+            setLoading(false);
         }
     };
 
     const isFormValid = formData.name && formData.sku && formData.category && formData.unitOfMeasure &&
         formData.unitPrice && formData.costPrice && formData.reorderPoint;
 
+    const isDisabled = loading || loadingMetadata;
+
     return (
         <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
             <DialogTitle>{product ? 'Edit Product' : 'Add New Product'}</DialogTitle>
             <DialogContent>
-                <Grid container spacing={2} sx={{ mt: 1 }}>
-                    <Grid item xs={12} sm={6}>
-                        <TextField
-                            name="sku"
-                            label="SKU"
-                            fullWidth
-                            value={formData.sku}
-                            onChange={handleChange}
-                            onBlur={handleBlur}
-                            error={!!errors.sku}
-                            helperText={errors.sku}
-                            disabled={!!product}
-                        />
+                {loadingMetadata ? (
+                    <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}>
+                        <CircularProgress />
+                    </Box>
+                ) : (
+                    <Grid container spacing={2} sx={{ mt: 1 }}>
+                        <Grid item xs={12} sm={6}>
+                            <TextField
+                                name="sku"
+                                label="SKU"
+                                fullWidth
+                                value={formData.sku}
+                                onChange={handleChange}
+                                onBlur={handleBlur}
+                                error={!!errors.sku}
+                                helperText={errors.sku}
+                                disabled={!!product || isDisabled}
+                            />
+                        </Grid>
+                        <Grid item xs={12} sm={6}>
+                            <TextField
+                                name="name"
+                                label="Product Name"
+                                fullWidth
+                                value={formData.name}
+                                onChange={handleChange}
+                                onBlur={handleBlur}
+                                error={!!errors.name}
+                                helperText={errors.name}
+                                disabled={isDisabled}
+                            />
+                        </Grid>
+                        <Grid item xs={12} sm={6}>
+                            <TextField
+                                select
+                                name="category"
+                                label="Category"
+                                fullWidth
+                                value={formData.category}
+                                onChange={handleChange}
+                                onBlur={handleBlur}
+                                error={!!errors.category}
+                                helperText={errors.category}
+                                disabled={isDisabled}
+                            >
+                                {categories.map((cat) => (
+                                    <MenuItem key={cat.id} value={cat.id}>
+                                        {cat.name}
+                                    </MenuItem>
+                                ))}
+                            </TextField>
+                        </Grid>
+                        <Grid item xs={12} sm={6}>
+                            <TextField
+                                select
+                                name="unitOfMeasure"
+                                label="Unit of Measure"
+                                fullWidth
+                                value={formData.unitOfMeasure}
+                                onChange={handleChange}
+                                onBlur={handleBlur}
+                                error={!!errors.unitOfMeasure}
+                                helperText={errors.unitOfMeasure}
+                                disabled={isDisabled}
+                            >
+                                {uoms.map((uom) => (
+                                    <MenuItem key={uom.id} value={uom.id}>
+                                        {uom.name} ({uom.abbreviation})
+                                    </MenuItem>
+                                ))}
+                            </TextField>
+                        </Grid>
+                        <Grid item xs={12}>
+                            <TextField
+                                name="description"
+                                label="Description"
+                                fullWidth
+                                multiline
+                                rows={3}
+                                value={formData.description}
+                                onChange={handleChange}
+                                disabled={isDisabled}
+                            />
+                        </Grid>
+                        <Grid item xs={12} sm={4}>
+                            <TextField
+                                name="unitPrice"
+                                label="Unit Price"
+                                type="number"
+                                fullWidth
+                                value={formData.unitPrice}
+                                onChange={handleChange}
+                                onBlur={handleBlur}
+                                error={!!errors.unitPrice}
+                                helperText={errors.unitPrice}
+                                inputProps={{ min: 0, step: 0.01 }}
+                                disabled={isDisabled}
+                            />
+                        </Grid>
+                        <Grid item xs={12} sm={4}>
+                            <TextField
+                                name="costPrice"
+                                label="Cost Price"
+                                type="number"
+                                fullWidth
+                                value={formData.costPrice}
+                                onChange={handleChange}
+                                onBlur={handleBlur}
+                                error={!!errors.costPrice}
+                                helperText={errors.costPrice}
+                                inputProps={{ min: 0, step: 0.01 }}
+                                disabled={isDisabled}
+                            />
+                        </Grid>
+                        <Grid item xs={12} sm={4}>
+                            <TextField
+                                name="reorderPoint"
+                                label="Reorder Point"
+                                type="number"
+                                fullWidth
+                                value={formData.reorderPoint}
+                                onChange={handleChange}
+                                onBlur={handleBlur}
+                                error={!!errors.reorderPoint}
+                                helperText={errors.reorderPoint}
+                                inputProps={{ min: 0 }}
+                                disabled={isDisabled}
+                            />
+                        </Grid>
                     </Grid>
-                    <Grid item xs={12} sm={6}>
-                        <TextField
-                            name="name"
-                            label="Product Name"
-                            fullWidth
-                            value={formData.name}
-                            onChange={handleChange}
-                            onBlur={handleBlur}
-                            error={!!errors.name}
-                            helperText={errors.name}
-                        />
-                    </Grid>
-                    <Grid item xs={12} sm={6}>
-                        <TextField
-                            select
-                            name="category"
-                            label="Category"
-                            fullWidth
-                            value={formData.category}
-                            onChange={handleChange}
-                            onBlur={handleBlur}
-                            error={!!errors.category}
-                            helperText={errors.category}
-                        >
-                            {categories.map((cat) => (
-                                <MenuItem key={cat.id} value={cat.id}>
-                                    {cat.name}
-                                </MenuItem>
-                            ))}
-                        </TextField>
-                    </Grid>
-                    <Grid item xs={12} sm={6}>
-                        <TextField
-                            select
-                            name="unitOfMeasure"
-                            label="Unit of Measure"
-                            fullWidth
-                            value={formData.unitOfMeasure}
-                            onChange={handleChange}
-                            onBlur={handleBlur}
-                            error={!!errors.unitOfMeasure}
-                            helperText={errors.unitOfMeasure}
-                        >
-                            {uoms.map((uom) => (
-                                <MenuItem key={uom.id} value={uom.id}>
-                                    {uom.name} ({uom.abbreviation})
-                                </MenuItem>
-                            ))}
-                        </TextField>
-                    </Grid>
-                    <Grid item xs={12}>
-                        <TextField
-                            name="description"
-                            label="Description"
-                            fullWidth
-                            multiline
-                            rows={3}
-                            value={formData.description}
-                            onChange={handleChange}
-                        />
-                    </Grid>
-                    <Grid item xs={12} sm={4}>
-                        <TextField
-                            name="unitPrice"
-                            label="Unit Price"
-                            type="number"
-                            fullWidth
-                            value={formData.unitPrice}
-                            onChange={handleChange}
-                            onBlur={handleBlur}
-                            error={!!errors.unitPrice}
-                            helperText={errors.unitPrice}
-                            inputProps={{ min: 0, step: 0.01 }}
-                        />
-                    </Grid>
-                    <Grid item xs={12} sm={4}>
-                        <TextField
-                            name="costPrice"
-                            label="Cost Price"
-                            type="number"
-                            fullWidth
-                            value={formData.costPrice}
-                            onChange={handleChange}
-                            onBlur={handleBlur}
-                            error={!!errors.costPrice}
-                            helperText={errors.costPrice}
-                            inputProps={{ min: 0, step: 0.01 }}
-                        />
-                    </Grid>
-                    <Grid item xs={12} sm={4}>
-                        <TextField
-                            name="reorderPoint"
-                            label="Reorder Point"
-                            type="number"
-                            fullWidth
-                            value={formData.reorderPoint}
-                            onChange={handleChange}
-                            onBlur={handleBlur}
-                            error={!!errors.reorderPoint}
-                            helperText={errors.reorderPoint}
-                            inputProps={{ min: 0 }}
-                        />
-                    </Grid>
-                </Grid>
+                )}
             </DialogContent>
             <DialogActions>
-                <Button onClick={onClose}>Cancel</Button>
+                <Button onClick={onClose} disabled={loading}>Cancel</Button>
                 <Button
                     onClick={handleSubmit}
                     variant="contained"
-                    disabled={!isFormValid}
+                    disabled={isDisabled || !isFormValid}
+                    startIcon={loading ? <CircularProgress size={20} color="inherit" /> : null}
                 >
-                    {product ? 'Update' : 'Create'}
+                    {loading ? 'Saving...' : (product ? 'Update' : 'Create')}
                 </Button>
             </DialogActions>
         </Dialog>

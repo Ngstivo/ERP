@@ -11,6 +11,7 @@ import {
     IconButton,
     Typography,
     Box,
+    CircularProgress,
 } from '@mui/material';
 import { Add, Delete } from '@mui/icons-material';
 import axios from 'axios';
@@ -47,12 +48,14 @@ export default function OrderDialog({ open, onClose }: OrderDialogProps) {
         items: '',
     });
 
+    const [loading, setLoading] = useState(false);
+
     useEffect(() => {
         if (open) {
             dispatch(fetchProducts());
             dispatch(fetchWarehouses());
             // Reset form
-            setFormData({ suppress: 'mock-supplier-id', warehouseId: '', notes: '' });
+            setFormData({ supplierId: 'mock-supplier-id', warehouseId: '', notes: '' });
             setItems([{ productId: '', quantity: 1 }]);
             setErrors({ warehouse: '', items: '' });
         }
@@ -110,6 +113,7 @@ export default function OrderDialog({ open, onClose }: OrderDialogProps) {
             return;
         }
 
+        setLoading(true);
         try {
             // Create PO
             await axios.post(
@@ -128,6 +132,8 @@ export default function OrderDialog({ open, onClose }: OrderDialogProps) {
             showSuccess('Purchase Order created successfully!');
         } catch (error) {
             showError(error);
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -150,6 +156,7 @@ export default function OrderDialog({ open, onClose }: OrderDialogProps) {
                             }}
                             error={!!errors.warehouse}
                             helperText={errors.warehouse}
+                            disabled={loading}
                         >
                             {warehouses.map((w) => (
                                 <MenuItem key={w.id} value={w.id}>
@@ -164,13 +171,14 @@ export default function OrderDialog({ open, onClose }: OrderDialogProps) {
                             fullWidth
                             value={formData.notes}
                             onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                            disabled={loading}
                         />
                     </Grid>
 
                     <Grid item xs={12}>
                         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
                             <Typography variant="h6">Items</Typography>
-                            <Button startIcon={<Add />} onClick={handleAddItem}>
+                            <Button startIcon={<Add />} onClick={handleAddItem} disabled={loading}>
                                 Add Item
                             </Button>
                         </Box>
@@ -190,6 +198,7 @@ export default function OrderDialog({ open, onClose }: OrderDialogProps) {
                                         value={item.productId}
                                         onChange={(e) => handleItemChange(index, 'productId', e.target.value)}
                                         error={!item.productId && !!errors.items}
+                                        disabled={loading}
                                     >
                                         {products.map((p) => (
                                             <MenuItem key={p.id} value={p.id}>
@@ -208,13 +217,14 @@ export default function OrderDialog({ open, onClose }: OrderDialogProps) {
                                         onChange={(e) => handleItemChange(index, 'quantity', e.target.value)}
                                         error={(item.quantity <= 0 || !item.quantity) && !!errors.items}
                                         inputProps={{ min: 1 }}
+                                        disabled={loading}
                                     />
                                 </Grid>
                                 <Grid item xs={2}>
                                     <IconButton
                                         onClick={() => handleRemoveItem(index)}
                                         color="error"
-                                        disabled={items.length === 1}
+                                        disabled={items.length === 1 || loading}
                                     >
                                         <Delete />
                                     </IconButton>
@@ -225,13 +235,14 @@ export default function OrderDialog({ open, onClose }: OrderDialogProps) {
                 </Grid>
             </DialogContent>
             <DialogActions>
-                <Button onClick={onClose}>Cancel</Button>
+                <Button onClick={onClose} disabled={loading}>Cancel</Button>
                 <Button
                     onClick={handleSubmit}
                     variant="contained"
-                    disabled={!isFormValid}
+                    disabled={loading || !isFormValid}
+                    startIcon={loading ? <CircularProgress size={20} color="inherit" /> : null}
                 >
-                    Create Order
+                    {loading ? 'Creating...' : 'Create Order'}
                 </Button>
             </DialogActions>
         </Dialog>

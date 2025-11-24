@@ -7,6 +7,7 @@ import {
     Button,
     TextField,
     Grid,
+    CircularProgress,
 } from '@mui/material';
 import axios from 'axios';
 import { useAppDispatch, useAppSelector } from '../../hooks/redux';
@@ -39,6 +40,8 @@ export default function WarehouseDialog({ open, onClose, warehouse }: WarehouseD
         city: '',
         country: '',
     });
+
+    const [loading, setLoading] = useState(false);
 
     useEffect(() => {
         if (warehouse) {
@@ -111,6 +114,7 @@ export default function WarehouseDialog({ open, onClose, warehouse }: WarehouseD
             return;
         }
 
+        setLoading(true);
         try {
             if (warehouse) {
                 // Update existing warehouse
@@ -126,6 +130,8 @@ export default function WarehouseDialog({ open, onClose, warehouse }: WarehouseD
             onClose();
         } catch (error) {
             showError(error);
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -144,7 +150,7 @@ export default function WarehouseDialog({ open, onClose, warehouse }: WarehouseD
                             onBlur={handleBlur}
                             error={!!errors.code}
                             helperText={errors.code || 'Uppercase alphanumeric (e.g., WH001)'}
-                            disabled={!!warehouse}
+                            disabled={!!warehouse || loading}
                         />
                     </Grid>
                     <Grid item xs={12} sm={6}>
@@ -157,6 +163,7 @@ export default function WarehouseDialog({ open, onClose, warehouse }: WarehouseD
                             onBlur={handleBlur}
                             error={!!errors.name}
                             helperText={errors.name}
+                            disabled={loading}
                         />
                     </Grid>
                     <Grid item xs={12}>
@@ -168,6 +175,7 @@ export default function WarehouseDialog({ open, onClose, warehouse }: WarehouseD
                             rows={2}
                             value={formData.address}
                             onChange={handleChange}
+                            disabled={loading}
                         />
                     </Grid>
                     <Grid item xs={12} sm={6}>
@@ -180,6 +188,7 @@ export default function WarehouseDialog({ open, onClose, warehouse }: WarehouseD
                             onBlur={handleBlur}
                             error={!!errors.city}
                             helperText={errors.city}
+                            disabled={loading}
                         />
                     </Grid>
                     <Grid item xs={12} sm={6}>
@@ -192,18 +201,20 @@ export default function WarehouseDialog({ open, onClose, warehouse }: WarehouseD
                             onBlur={handleBlur}
                             error={!!errors.country}
                             helperText={errors.country}
+                            disabled={loading}
                         />
                     </Grid>
                 </Grid>
             </DialogContent>
             <DialogActions>
-                <Button onClick={onClose}>Cancel</Button>
+                <Button onClick={onClose} disabled={loading}>Cancel</Button>
                 <Button
                     onClick={handleSubmit}
                     variant="contained"
-                    disabled={!formData.name || !formData.code || !formData.city || !formData.country}
+                    disabled={loading || !formData.name || !formData.code || !formData.city || !formData.country}
+                    startIcon={loading ? <CircularProgress size={20} color="inherit" /> : null}
                 >
-                    {warehouse ? 'Update' : 'Create'}
+                    {loading ? 'Saving...' : (warehouse ? 'Update' : 'Create')}
                 </Button>
             </DialogActions>
         </Dialog>
