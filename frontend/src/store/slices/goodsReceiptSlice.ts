@@ -35,6 +35,18 @@ export const fetchGoodsReceipts = createAsyncThunk(
         });
         return response.data;
     }
+    }
+);
+
+export const createGoodsReceipt = createAsyncThunk(
+    'goodsReceipt/create',
+    async (receiptData: any, { getState }) => {
+        const state = getState() as any;
+        const response = await axios.post(`${API_URL}/goods-receipt`, receiptData, {
+            headers: { Authorization: `Bearer ${state.auth.token}` },
+        });
+        return response.data;
+    }
 );
 
 const goodsReceiptSlice = createSlice({
@@ -53,6 +65,9 @@ const goodsReceiptSlice = createSlice({
             .addCase(fetchGoodsReceipts.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.error.message || 'Failed to fetch goods receipts';
+            })
+            .addCase(createGoodsReceipt.fulfilled, (state, action) => {
+                state.receipts.unshift(action.payload);
             });
     },
 });

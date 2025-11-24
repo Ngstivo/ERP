@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import {
     Box,
     Typography,
@@ -18,10 +18,12 @@ import { Add } from '@mui/icons-material';
 import { useAppDispatch, useAppSelector } from '../hooks/redux';
 import { fetchGoodsReceipts } from '../store/slices/goodsReceiptSlice';
 import { format } from 'date-fns';
+import GoodsReceiptDialog from '../components/inventory/GoodsReceiptDialog';
 
 export default function GoodsReceiptPage() {
     const dispatch = useAppDispatch();
     const { receipts, loading } = useAppSelector((state) => state.goodsReceipt);
+    const [openDialog, setOpenDialog] = useState(false);
 
     useEffect(() => {
         dispatch(fetchGoodsReceipts());
@@ -63,7 +65,7 @@ export default function GoodsReceiptPage() {
                         Manage incoming goods with quality inspection and put-away
                     </Typography>
                 </Box>
-                <Button variant="contained" startIcon={<Add />}>
+                <Button variant="contained" startIcon={<Add />} onClick={() => setOpenDialog(true)}>
                     Create Receipt
                 </Button>
             </Box>
@@ -124,6 +126,7 @@ export default function GoodsReceiptPage() {
                     </TableContainer>
                 </CardContent>
             </Card>
+            <GoodsReceiptDialog open={openDialog} onClose={() => setOpenDialog(false)} />
         </Box>
     );
 }
