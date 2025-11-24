@@ -42,10 +42,19 @@ export default function OrderDialog({ open, onClose }: OrderDialogProps) {
         { productId: '', quantity: 1 },
     ]);
 
+    const [errors, setErrors] = useState({
+        warehouse: '',
+        items: '',
+    });
+
     useEffect(() => {
         if (open) {
             dispatch(fetchProducts());
             dispatch(fetchWarehouses());
+            // Reset form
+            setFormData({ suppress: 'mock-supplier-id', warehouseId: '', notes: '' });
+            setItems([{ productId: '', quantity: 1 }]);
+            setErrors({ warehouse: '', items: '' });
         }
     }, [open, dispatch]);
 
@@ -54,9 +63,11 @@ export default function OrderDialog({ open, onClose }: OrderDialogProps) {
     };
 
     const handleRemoveItem = (index: number) => {
-        const newItems = [...items];
-        newItems.splice(index, 1);
-        setItems(newItems);
+        if (items.length > 1) {
+            const newItems = [...items];
+            newItems.splice(index, 1);
+            setItems(newItems);
+        }
     };
 
     const handleItemChange = (index: number, field: string, value: any) => {
@@ -65,7 +76,40 @@ export default function OrderDialog({ open, onClose }: OrderDialogProps) {
         setItems(newItems);
     };
 
+    const validateForm = (): boolean => {
+        const newErrors = { warehouse: '', items: '' };
+
+        // Validate warehouse selection
+        if (!formData.warehouseId) {
+            newErrors.warehouse = 'Please select a warehouse';
+        }
+
+        // Validate items
+        if (items.length === 0) {
+            newErrors.items = 'At least one item is required';
+        } else if (items.some(item => !item.productId)) {
+            newErrors.items = 'All items must have a product selected';
+        } else if (items.some(item => !item.quantity || item.quantity <= 0)) {
+            newErrors.items = 'All items must have a quantity greater than 0';
+        } else {
+            // Check for duplicate products
+            const productIds = items.map(item => item.productId);
+            const uniqueIds = new Set(productIds);
+            if (productIds.length !== uniqueIds.size) {
+                newErrors.items = 'Duplicate products are not allowed';
+            }
+        }
+
+        setErrors(newErrors);
+        return Object.values(newErrors).every(error => error === '');
+    };
+
     const handleSubmit = async () => {
+        if (!validateForm()) {
+            showError('Please fix all validation errors before submitting');
+            return;
+        }
+
         try {
             // Create PO
             await axios.post(
@@ -87,6 +131,8 @@ export default function OrderDialog({ open, onClose }: OrderDialogProps) {
         }
     };
 
+    const isFormValid = formData.warehouseId && items.every(item => item.productId && item.quantity > 0);
+
     return (
         <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
             <DialogTitle>Create Purchase Order</DialogTitle>
@@ -98,7 +144,12 @@ export default function OrderDialog({ open, onClose }: OrderDialogProps) {
                             label="Warehouse"
                             fullWidth
                             value={formData.warehouseId}
-                            onChange={(e) => setFormData({ ...formData, warehouseId: e.target.value })}
+                            onChange={(e) => {
+                                setFormData({ ...formData, warehouseId: e.target.value });
+                                if (errors.warehouse) setErrors({ ...errors, warehouse: '' });
+                            }}
+                            error={!!errors.warehouse}
+                            helperText={errors.warehouse}
                         >
                             {warehouses.map((w) => (
                                 <MenuItem key={w.id} value={w.id}>
@@ -123,6 +174,11 @@ export default function OrderDialog({ open, onClose }: OrderDialogProps) {
                                 Add Item
                             </Button>
                         </Box>
+                        {errors.items && (
+                            <Typography color="error" variant="caption" sx={{ mb: 1, display: 'block' }}>
+                                {errors.items}
+                            </Typography>
+                        )}
                         {items.map((item, index) => (
                             <Grid container spacing={2} key={index} sx={{ mb: 2 }}>
                                 <Grid item xs={6}>
@@ -133,6 +189,7 @@ export default function OrderDialog({ open, onClose }: OrderDialogProps) {
                                         size="small"
                                         value={item.productId}
                                         onChange={(e) => handleItemChange(index, 'productId', e.target.value)}
+                                        error={!item.productId && !!errors.items}
                                     >
                                         {products.map((p) => (
                                             <MenuItem key={p.id} value={p.id}>
@@ -149,10 +206,16 @@ export default function OrderDialog({ open, onClose }: OrderDialogProps) {
                                         size="small"
                                         value={item.quantity}
                                         onChange={(e) => handleItemChange(index, 'quantity', e.target.value)}
+                                        error={(item.quantity <= 0 || !item.quantity) && !!errors.items}
+                                        inputProps={{ min: 1 }}
                                     />
                                 </Grid>
                                 <Grid item xs={2}>
-                                    <IconButton onClick={() => handleRemoveItem(index)} color="error">
+                                    <IconButton
+                                        onClick={() => handleRemoveItem(index)}
+                                        color="error"
+                                        disabled={items.length === 1}
+                                    >
                                         <Delete />
                                     </IconButton>
                                 </Grid>
@@ -166,7 +229,7 @@ export default function OrderDialog({ open, onClose }: OrderDialogProps) {
                 <Button
                     onClick={handleSubmit}
                     variant="contained"
-                    disabled={!formData.warehouseId || items.some(i => !i.productId)}
+                    disabled={!isFormValid}
                 >
                     Create Order
                 </Button>

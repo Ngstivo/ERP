@@ -11,6 +11,7 @@ import {
 import axios from 'axios';
 import { useAppDispatch, useAppSelector } from '../../hooks/redux';
 import { createWarehouse, fetchWarehouses } from '../../store/slices/warehousesSlice';
+import { showSuccess, showError } from '../../utils/toast';
 
 const API_URL = 'https://erp-backend-68v8.onrender.com/api';
 
@@ -23,10 +24,18 @@ interface WarehouseDialogProps {
 export default function WarehouseDialog({ open, onClose, warehouse }: WarehouseDialogProps) {
     const dispatch = useAppDispatch();
     const { token } = useAppSelector((state) => state.auth);
+
     const [formData, setFormData] = useState({
         name: '',
         code: '',
         address: '',
+        city: '',
+        country: '',
+    });
+
+    const [errors, setErrors] = useState({
+        name: '',
+        code: '',
         city: '',
         country: '',
     });
@@ -43,13 +52,65 @@ export default function WarehouseDialog({ open, onClose, warehouse }: WarehouseD
         } else {
             setFormData({ name: '', code: '', address: '', city: '', country: '' });
         }
+        // Clear errors when dialog opens
+        setErrors({ name: '', code: '', city: '', country: '' });
     }, [warehouse, open]);
 
+    const validateField = (name: string, value: string): string => {
+        switch (name) {
+            case 'name':
+                return value.trim() === '' ? 'Warehouse name is required' : '';
+            case 'code':
+                if (value.trim() === '') return 'Warehouse code is required';
+                if (!/^[A-Z0-9]+$/.test(value)) return 'Code must be uppercase alphanumeric';
+                return '';
+            case 'city':
+                return value.trim() === '' ? 'City is required' : '';
+            case 'country':
+                return value.trim() === '' ? 'Country is required' : '';
+            default:
+                return '';
+        }
+    };
+
     const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
-        setFormData({ ...formData, [e.target.name]: e.target.value });
+        const { name, value } = e.target;
+        // For code field, auto-uppercase
+        const finalValue = name === 'code' ? value.toUpperCase() : value;
+        setFormData({ ...formData, [name]: finalValue });
+
+        // Clear error when user starts typing
+        if (errors[name as keyof typeof errors]) {
+            setErrors({ ...errors, [name]: '' });
+        }
+    };
+
+    const handleBlur = (e: ChangeEvent<HTMLInputElement>) => {
+        const { name, value } = e.target;
+        if (name in errors) {
+            const error = validateField(name, value);
+            setErrors({ ...errors, [name]: error });
+        }
+    };
+
+    const validateForm = (): boolean => {
+        const newErrors = {
+            name: validateField('name', formData.name),
+            code: validateField('code', formData.code),
+            city: validateField('city', formData.city),
+            country: validateField('country', formData.country),
+        };
+
+        setErrors(newErrors);
+        return Object.values(newErrors).every(error => error === '');
     };
 
     const handleSubmit = async () => {
+        if (!validateForm()) {
+            showError('Please fix all validation errors before submitting');
+            return;
+        }
+
         try {
             if (warehouse) {
                 // Update existing warehouse
@@ -61,10 +122,10 @@ export default function WarehouseDialog({ open, onClose, warehouse }: WarehouseD
                 await dispatch(createWarehouse(formData));
             }
             dispatch(fetchWarehouses());
+            showSuccess(warehouse ? 'Warehouse updated successfully!' : 'Warehouse created successfully!');
             onClose();
         } catch (error) {
-            console.error('Failed to save warehouse:', error);
-            alert('Failed to save warehouse');
+            showError(error);
         }
     };
 
@@ -80,6 +141,9 @@ export default function WarehouseDialog({ open, onClose, warehouse }: WarehouseD
                             fullWidth
                             value={formData.code}
                             onChange={handleChange}
+                            onBlur={handleBlur}
+                            error={!!errors.code}
+                            helperText={errors.code || 'Uppercase alphanumeric (e.g., WH001)'}
                             disabled={!!warehouse}
                         />
                     </Grid>
@@ -90,6 +154,9 @@ export default function WarehouseDialog({ open, onClose, warehouse }: WarehouseD
                             fullWidth
                             value={formData.name}
                             onChange={handleChange}
+                            onBlur={handleBlur}
+                            error={!!errors.name}
+                            helperText={errors.name}
                         />
                     </Grid>
                     <Grid item xs={12}>
@@ -110,6 +177,9 @@ export default function WarehouseDialog({ open, onClose, warehouse }: WarehouseD
                             fullWidth
                             value={formData.city}
                             onChange={handleChange}
+                            onBlur={handleBlur}
+                            error={!!errors.city}
+                            helperText={errors.city}
                         />
                     </Grid>
                     <Grid item xs={12} sm={6}>
@@ -119,13 +189,20 @@ export default function WarehouseDialog({ open, onClose, warehouse }: WarehouseD
                             fullWidth
                             value={formData.country}
                             onChange={handleChange}
+                            onBlur={handleBlur}
+                            error={!!errors.country}
+                            helperText={errors.country}
                         />
                     </Grid>
                 </Grid>
             </DialogContent>
             <DialogActions>
                 <Button onClick={onClose}>Cancel</Button>
-                <Button onClick={handleSubmit} variant="contained">
+                <Button
+                    onClick={handleSubmit}
+                    variant="contained"
+                    disabled={!formData.name || !formData.code || !formData.city || !formData.country}
+                >
                     {warehouse ? 'Update' : 'Create'}
                 </Button>
             </DialogActions>

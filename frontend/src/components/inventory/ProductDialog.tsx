@@ -39,6 +39,16 @@ export default function ProductDialog({ open, onClose, product }: ProductDialogP
         unitOfMeasure: '',
     });
 
+    const [errors, setErrors] = useState({
+        name: '',
+        sku: '',
+        category: '',
+        unitOfMeasure: '',
+        unitPrice: '',
+        costPrice: '',
+        reorderPoint: '',
+    });
+
     useEffect(() => {
         if (open) {
             fetchMetadata();
@@ -69,6 +79,16 @@ export default function ProductDialog({ open, onClose, product }: ProductDialogP
                 unitOfMeasure: '',
             });
         }
+        // Clear errors
+        setErrors({
+            name: '',
+            sku: '',
+            category: '',
+            unitOfMeasure: '',
+            unitPrice: '',
+            costPrice: '',
+            reorderPoint: '',
+        });
     }, [product, open]);
 
     const fetchMetadata = async () => {
@@ -80,15 +100,74 @@ export default function ProductDialog({ open, onClose, product }: ProductDialogP
             setCategories(catRes.data);
             setUoms(uomRes.data);
         } catch (error) {
-            console.error('Failed to fetch metadata:', error);
+            showError('Failed to load categories and units of measure');
+        }
+    };
+
+    const validateField = (name: string, value: string): string => {
+        switch (name) {
+            case 'name':
+                return value.trim() === '' ? 'Product name is required' : '';
+            case 'sku':
+                return value.trim() === '' ? 'SKU is required' : '';
+            case 'category':
+                return value === '' ? 'Category is required' : '';
+            case 'unitOfMeasure':
+                return value === '' ? 'Unit of measure is required' : '';
+            case 'unitPrice':
+                if (value === '') return 'Unit price is required';
+                if (isNaN(Number(value)) || Number(value) <= 0) return 'Unit price must be greater than 0';
+                return '';
+            case 'costPrice':
+                if (value === '') return 'Cost price is required';
+                if (isNaN(Number(value)) || Number(value) <= 0) return 'Cost price must be greater than 0';
+                return '';
+            case 'reorderPoint':
+                if (value === '') return 'Reorder point is required';
+                if (isNaN(Number(value)) || Number(value) < 0) return 'Reorder point cannot be negative';
+                return '';
+            default:
+                return '';
         }
     };
 
     const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
-        setFormData({ ...formData, [e.target.name]: e.target.value });
+        const { name, value } = e.target;
+        setFormData({ ...formData, [name]: value });
+
+        // Clear error when user starts typing
+        if (errors[name as keyof typeof errors]) {
+            setErrors({ ...errors, [name]: '' });
+        }
+    };
+
+    const handleBlur = (e: ChangeEvent<HTMLInputElement>) => {
+        const { name, value } = e.target;
+        const error = validateField(name, value);
+        setErrors({ ...errors, [name]: error });
+    };
+
+    const validateForm = (): boolean => {
+        const newErrors = {
+            name: validateField('name', formData.name),
+            sku: validateField('sku', formData.sku),
+            category: validateField('category', formData.category),
+            unitOfMeasure: validateField('unitOfMeasure', formData.unitOfMeasure),
+            unitPrice: validateField('unitPrice', formData.unitPrice),
+            costPrice: validateField('costPrice', formData.costPrice),
+            reorderPoint: validateField('reorderPoint', formData.reorderPoint),
+        };
+
+        setErrors(newErrors);
+        return Object.values(newErrors).every(error => error === '');
     };
 
     const handleSubmit = async () => {
+        if (!validateForm()) {
+            showError('Please fix all validation errors before submitting');
+            return;
+        }
+
         try {
             const payload = {
                 ...formData,
@@ -114,6 +193,9 @@ export default function ProductDialog({ open, onClose, product }: ProductDialogP
         }
     };
 
+    const isFormValid = formData.name && formData.sku && formData.category && formData.unitOfMeasure &&
+        formData.unitPrice && formData.costPrice && formData.reorderPoint;
+
     return (
         <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
             <DialogTitle>{product ? 'Edit Product' : 'Add New Product'}</DialogTitle>
@@ -126,6 +208,9 @@ export default function ProductDialog({ open, onClose, product }: ProductDialogP
                             fullWidth
                             value={formData.sku}
                             onChange={handleChange}
+                            onBlur={handleBlur}
+                            error={!!errors.sku}
+                            helperText={errors.sku}
                             disabled={!!product}
                         />
                     </Grid>
@@ -136,6 +221,9 @@ export default function ProductDialog({ open, onClose, product }: ProductDialogP
                             fullWidth
                             value={formData.name}
                             onChange={handleChange}
+                            onBlur={handleBlur}
+                            error={!!errors.name}
+                            helperText={errors.name}
                         />
                     </Grid>
                     <Grid item xs={12} sm={6}>
@@ -146,6 +234,9 @@ export default function ProductDialog({ open, onClose, product }: ProductDialogP
                             fullWidth
                             value={formData.category}
                             onChange={handleChange}
+                            onBlur={handleBlur}
+                            error={!!errors.category}
+                            helperText={errors.category}
                         >
                             {categories.map((cat) => (
                                 <MenuItem key={cat.id} value={cat.id}>
@@ -162,10 +253,13 @@ export default function ProductDialog({ open, onClose, product }: ProductDialogP
                             fullWidth
                             value={formData.unitOfMeasure}
                             onChange={handleChange}
+                            onBlur={handleBlur}
+                            error={!!errors.unitOfMeasure}
+                            helperText={errors.unitOfMeasure}
                         >
                             {uoms.map((uom) => (
                                 <MenuItem key={uom.id} value={uom.id}>
-                                    {uom.name} ({uom.code})
+                                    {uom.name} ({uom.abbreviation})
                                 </MenuItem>
                             ))}
                         </TextField>
@@ -189,6 +283,10 @@ export default function ProductDialog({ open, onClose, product }: ProductDialogP
                             fullWidth
                             value={formData.unitPrice}
                             onChange={handleChange}
+                            onBlur={handleBlur}
+                            error={!!errors.unitPrice}
+                            helperText={errors.unitPrice}
+                            inputProps={{ min: 0, step: 0.01 }}
                         />
                     </Grid>
                     <Grid item xs={12} sm={4}>
@@ -199,6 +297,10 @@ export default function ProductDialog({ open, onClose, product }: ProductDialogP
                             fullWidth
                             value={formData.costPrice}
                             onChange={handleChange}
+                            onBlur={handleBlur}
+                            error={!!errors.costPrice}
+                            helperText={errors.costPrice}
+                            inputProps={{ min: 0, step: 0.01 }}
                         />
                     </Grid>
                     <Grid item xs={12} sm={4}>
@@ -209,6 +311,10 @@ export default function ProductDialog({ open, onClose, product }: ProductDialogP
                             fullWidth
                             value={formData.reorderPoint}
                             onChange={handleChange}
+                            onBlur={handleBlur}
+                            error={!!errors.reorderPoint}
+                            helperText={errors.reorderPoint}
+                            inputProps={{ min: 0 }}
                         />
                     </Grid>
                 </Grid>
@@ -218,7 +324,7 @@ export default function ProductDialog({ open, onClose, product }: ProductDialogP
                 <Button
                     onClick={handleSubmit}
                     variant="contained"
-                    disabled={!formData.name || !formData.sku || !formData.category || !formData.unitOfMeasure}
+                    disabled={!isFormValid}
                 >
                     {product ? 'Update' : 'Create'}
                 </Button>
