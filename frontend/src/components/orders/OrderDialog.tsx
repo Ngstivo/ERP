@@ -19,8 +19,7 @@ import { useAppDispatch, useAppSelector } from '../../hooks/redux';
 import { fetchProducts } from '../../store/slices/productsSlice';
 import { fetchWarehouses } from '../../store/slices/warehousesSlice';
 import { showSuccess, showError } from '../../utils/toast';
-
-const API_URL = 'https://erp-backend-68v8.onrender.com/api';
+import { API_URL } from '../../config/api';
 
 interface OrderDialogProps {
     open: boolean;

@@ -10,11 +10,8 @@ import {
 } from '@mui/material';
 import { Add } from '@mui/icons-material';
 import axios from 'axios';
-import { useAppDispatch, useAppSelector } from '../hooks/redux';
-import { fetchWarehouses } from '../store/slices/warehousesSlice';
 import WarehouseDialog from '../components/warehouse/WarehouseDialog';
-
-const API_URL = 'https://erp-backend-68v8.onrender.com/api';
+import { API_URL } from '../config/api';
 
 export default function WarehousesPage() {
     const dispatch = useAppDispatch();

@@ -18,10 +18,8 @@ import { Add } from '@mui/icons-material';
 import axios from 'axios';
 import { useAppDispatch, useAppSelector } from '../hooks/redux';
 import { fetchProducts } from '../store/slices/productsSlice';
-import ProductDialog from '../components/inventory/ProductDialog';
 import { showSuccess, showError, showWarning } from '../utils/toast';
-
-const API_URL = 'https://erp-backend-68v8.onrender.com/api';
+import { API_URL } from '../config/api';
 
 export default function ProductsPage() {
     const dispatch = useAppDispatch();

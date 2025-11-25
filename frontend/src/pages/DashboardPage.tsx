@@ -16,11 +16,8 @@ import {
     Storage,
 } from '@mui/icons-material';
 import axios from 'axios';
-import { useAppSelector } from '../hooks/redux';
 import { showSuccess, showError } from '../utils/toast';
-
-// Hardcoded API URL for stability
-const API_URL = 'https://erp-backend-68v8.onrender.com/api';
+import { API_URL } from '../config/api';
 
 interface DashboardMetrics {
     totalWarehouses: number;

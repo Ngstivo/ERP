@@ -15,8 +15,7 @@ import axios from 'axios';
 import { useAppDispatch, useAppSelector } from '../../hooks/redux';
 import { createProduct, fetchProducts } from '../../store/slices/productsSlice';
 import { showSuccess, showError } from '../../utils/toast';
-
-const API_URL = 'https://erp-backend-68v8.onrender.com/api';
+import { API_URL } from '../../config/api';
 
 interface ProductDialogProps {
     open: boolean;
