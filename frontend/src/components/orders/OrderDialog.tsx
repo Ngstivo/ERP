@@ -24,9 +24,10 @@ import { API_URL } from '../../config/api';
 interface OrderDialogProps {
     open: boolean;
     onClose: () => void;
+    order?: any; // Order to edit (optional)
 }
 
-export default function OrderDialog({ open, onClose }: OrderDialogProps) {
+export default function OrderDialog({ open, onClose, order }: OrderDialogProps) {
     const dispatch = useAppDispatch();
     const { token } = useAppSelector((state) => state.auth);
     const { products } = useAppSelector((state) => state.products);
@@ -53,12 +54,28 @@ export default function OrderDialog({ open, onClose }: OrderDialogProps) {
         if (open) {
             dispatch(fetchProducts());
             dispatch(fetchWarehouses());
-            // Reset form
-            setFormData({ supplierId: 'mock-supplier-id', warehouseId: '', notes: '' });
-            setItems([{ productId: '', quantity: 1 }]);
+
+            // Populate form if editing
+            if (order) {
+                setFormData({
+                    supplierId: 'mock-supplier-id',
+                    warehouseId: order.warehouse?.id || '',
+                    notes: order.notes || '',
+                });
+                setItems(
+                    order.items?.map((item: any) => ({
+                        productId: item.product?.id || '',
+                        quantity: item.quantity || 1,
+                    })) || [{ productId: '', quantity: 1 }]
+                );
+            } else {
+                // Reset form for new order
+                setFormData({ supplierId: 'mock-supplier-id', warehouseId: '', notes: '' });
+                setItems([{ productId: '', quantity: 1 }]);
+            }
             setErrors({ warehouse: '', items: '' });
         }
-    }, [open, dispatch]);
+    }, [open, order, dispatch]);
 
     const handleAddItem = () => {
         setItems([...items, { productId: '', quantity: 1 }]);
@@ -114,27 +131,35 @@ export default function OrderDialog({ open, onClose }: OrderDialogProps) {
 
         setLoading(true);
         try {
-            // Create PO with product prices
-            await axios.post(
-                `${API_URL}/orders/purchase`,
-                {
-                    warehouseId: formData.warehouseId,
-                    supplierName: 'Default Supplier', // TODO: Add supplier selection
-                    orderDate: new Date().toISOString().split('T')[0], // Current date in YYYY-MM-DD
-                    notes: formData.notes,
-                    items: items.map(item => {
-                        const product = products.find(p => p.id === item.productId);
-                        return {
-                            product: { id: item.productId },
-                            quantity: Number(item.quantity),
-                            unitPrice: product?.costPrice || 0,
-                        };
-                    }),
-                },
-                { headers: { Authorization: `Bearer ${token}` } }
-            );
+            const payload = {
+                warehouseId: formData.warehouseId,
+                supplierName: 'Default Supplier', // TODO: Add supplier selection
+                orderDate: new Date().toISOString().split('T')[0], // Current date in YYYY-MM-DD
+                notes: formData.notes,
+                items: items.map(item => {
+                    const product = products.find(p => p.id === item.productId);
+                    return {
+                        product: { id: item.productId },
+                        quantity: Number(item.quantity),
+                        unitPrice: product?.costPrice || 0,
+                    };
+                }),
+            };
+
+            if (order) {
+                // Update existing order
+                await axios.patch(`${API_URL}/orders/purchase/${order.id}`, payload, {
+                    headers: { Authorization: `Bearer ${token}` },
+                });
+                showSuccess('Purchase Order updated successfully!');
+            } else {
+                // Create new order
+                await axios.post(`${API_URL}/orders/purchase`, payload, {
+                    headers: { Authorization: `Bearer ${token}` },
+                });
+                showSuccess('Purchase Order created successfully!');
+            }
             onClose();
-            showSuccess('Purchase Order created successfully!');
         } catch (error) {
             showError(error);
         } finally {
@@ -146,7 +171,7 @@ export default function OrderDialog({ open, onClose }: OrderDialogProps) {
 
     return (
         <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
-            <DialogTitle>Create Purchase Order</DialogTitle>
+            <DialogTitle>{order ? 'Edit Purchase Order' : 'Create Purchase Order'}</DialogTitle>
             <DialogContent>
                 <Grid container spacing={2} sx={{ mt: 1 }}>
                     <Grid item xs={12} sm={6}>
@@ -247,7 +272,7 @@ export default function OrderDialog({ open, onClose }: OrderDialogProps) {
                     disabled={loading || !isFormValid}
                     startIcon={loading ? <CircularProgress size={20} color="inherit" /> : null}
                 >
-                    {loading ? 'Creating...' : 'Create Order'}
+                    {loading ? (order ? 'Updating...' : 'Creating...') : (order ? 'Update Order' : 'Create Order')}
                 </Button>
             </DialogActions>
         </Dialog>

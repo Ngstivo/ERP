@@ -14,7 +14,7 @@ import {
     Chip,
     IconButton,
 } from '@mui/material';
-import { Add, Delete } from '@mui/icons-material';
+import { Add, Delete, Edit } from '@mui/icons-material';
 import axios from 'axios';
 import { useAppSelector } from '../hooks/redux';
 import OrderDialog from '../components/orders/OrderDialog';
@@ -26,6 +26,7 @@ export default function OrdersPage() {
     const { token } = useAppSelector((state) => state.auth);
     const [orders, setOrders] = useState<any[]>([]);
     const [openDialog, setOpenDialog] = useState(false);
+    const [editingOrder, setEditingOrder] = useState<any>(null);
 
     const fetchOrders = async () => {
         try {
@@ -44,7 +45,13 @@ export default function OrdersPage() {
 
     const handleCloseDialog = () => {
         setOpenDialog(false);
+        setEditingOrder(null);
         fetchOrders();
+    };
+
+    const handleEdit = (order: any) => {
+        setEditingOrder(order);
+        setOpenDialog(true);
     };
 
     const handleDelete = async (id: string, orderNumber: string) => {
@@ -116,6 +123,14 @@ export default function OrdersPage() {
                                             <TableCell align="right">
                                                 <IconButton
                                                     size="small"
+                                                    color="primary"
+                                                    onClick={() => handleEdit(order)}
+                                                    sx={{ mr: 1 }}
+                                                >
+                                                    <Edit />
+                                                </IconButton>
+                                                <IconButton
+                                                    size="small"
                                                     color="error"
                                                     onClick={() => handleDelete(order.id, order.orderNumber)}
                                                 >
@@ -131,7 +146,7 @@ export default function OrdersPage() {
                 </CardContent>
             </Card>
 
-            <OrderDialog open={openDialog} onClose={handleCloseDialog} />
+            <OrderDialog open={openDialog} onClose={handleCloseDialog} order={editingOrder} />
         </Box>
     );
 }
