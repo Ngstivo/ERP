@@ -18,8 +18,7 @@ import axios from 'axios';
 import { useAppSelector } from '../hooks/redux';
 import OrderDialog from '../components/orders/OrderDialog';
 import { format } from 'date-fns';
-
-const API_URL = 'https://erp-backend-68v8.onrender.com/api';
+import { API_URL } from '../config/api';
 
 export default function OrdersPage() {
     const { token } = useAppSelector((state) => state.auth);
