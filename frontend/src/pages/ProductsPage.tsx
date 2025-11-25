@@ -18,6 +18,7 @@ import { Add } from '@mui/icons-material';
 import axios from 'axios';
 import { useAppDispatch, useAppSelector } from '../hooks/redux';
 import { fetchProducts } from '../store/slices/productsSlice';
+import ProductDialog from '../components/inventory/ProductDialog';
 import { showSuccess, showError, showWarning } from '../utils/toast';
 import { API_URL } from '../config/api';
 
