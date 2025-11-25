@@ -118,7 +118,10 @@ export default function OrderDialog({ open, onClose }: OrderDialogProps) {
             await axios.post(
                 `${API_URL}/orders/purchase`,
                 {
-                    ...formData,
+                    warehouseId: formData.warehouseId,
+                    supplierName: 'Default Supplier', // TODO: Add supplier selection
+                    orderDate: new Date().toISOString().split('T')[0], // Current date in YYYY-MM-DD
+                    notes: formData.notes,
                     items: items.map(item => {
                         const product = products.find(p => p.id === item.productId);
                         return {
