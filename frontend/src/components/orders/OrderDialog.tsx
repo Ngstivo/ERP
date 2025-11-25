@@ -114,16 +114,19 @@ export default function OrderDialog({ open, onClose }: OrderDialogProps) {
 
         setLoading(true);
         try {
-            // Create PO
+            // Create PO with product prices
             await axios.post(
                 `${API_URL}/orders/purchase`,
                 {
                     ...formData,
-                    items: items.map(item => ({
-                        product: { id: item.productId },
-                        quantity: Number(item.quantity),
-                        unitPrice: 0, // Default
-                    })),
+                    items: items.map(item => {
+                        const product = products.find(p => p.id === item.productId);
+                        return {
+                            product: { id: item.productId },
+                            quantity: Number(item.quantity),
+                            unitPrice: product?.costPrice || 0,
+                        };
+                    }),
                 },
                 { headers: { Authorization: `Bearer ${token}` } }
             );
