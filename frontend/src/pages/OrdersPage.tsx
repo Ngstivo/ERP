@@ -12,13 +12,15 @@ import {
     TableHead,
     TableRow,
     Chip,
+    IconButton,
 } from '@mui/material';
-import { Add } from '@mui/icons-material';
+import { Add, Delete } from '@mui/icons-material';
 import axios from 'axios';
 import { useAppSelector } from '../hooks/redux';
 import OrderDialog from '../components/orders/OrderDialog';
 import { format } from 'date-fns';
 import { API_URL } from '../config/api';
+import { showSuccess, showError, showWarning } from '../utils/toast';
 
 export default function OrdersPage() {
     const { token } = useAppSelector((state) => state.auth);
@@ -43,6 +45,21 @@ export default function OrdersPage() {
     const handleCloseDialog = () => {
         setOpenDialog(false);
         fetchOrders();
+    };
+
+    const handleDelete = async (id: string, orderNumber: string) => {
+        if (!window.confirm(`Are you sure you want to delete order ${orderNumber}?`)) {
+            return;
+        }
+        try {
+            await axios.delete(`${API_URL}/orders/purchase/${id}`, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+            fetchOrders();
+            showSuccess('Order deleted successfully!');
+        } catch (error) {
+            showError(error);
+        }
     };
 
     return (
@@ -72,12 +89,13 @@ export default function OrdersPage() {
                                     <TableCell>Date</TableCell>
                                     <TableCell align="right">Items</TableCell>
                                     <TableCell>Status</TableCell>
+                                    <TableCell align="right">Actions</TableCell>
                                 </TableRow>
                             </TableHead>
                             <TableBody>
                                 {orders.length === 0 ? (
                                     <TableRow>
-                                        <TableCell colSpan={5} align="center">
+                                        <TableCell colSpan={6} align="center">
                                             <Typography variant="body2" color="text.secondary" sx={{ py: 4 }}>
                                                 No orders found. Click "Create Order" to start.
                                             </Typography>
@@ -94,6 +112,15 @@ export default function OrdersPage() {
                                             <TableCell align="right">{order.items?.length || 0}</TableCell>
                                             <TableCell>
                                                 <Chip label={order.status || 'DRAFT'} size="small" />
+                                            </TableCell>
+                                            <TableCell align="right">
+                                                <IconButton
+                                                    size="small"
+                                                    color="error"
+                                                    onClick={() => handleDelete(order.id, order.orderNumber)}
+                                                >
+                                                    <Delete />
+                                                </IconButton>
                                             </TableCell>
                                         </TableRow>
                                     ))
