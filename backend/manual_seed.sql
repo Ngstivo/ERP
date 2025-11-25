@@ -1,1 +1,372 @@
-c
+-- ============================================================================
+-- COMPREHENSIVE ERP SEED SCRIPT
+-- Complete Inventory Management System with Predefined Data
+-- ============================================================================
+
+-- Clean up existing data (in correct order to respect foreign keys)
+TRUNCATE TABLE goods_receipt_items, goods_receipts, purchase_order_items, purchase_orders, 
+               batches, stock_levels, products, units_of_measure, categories, 
+               warehouses, user_roles, users, roles CASCADE;
+
+-- ============================================================================
+-- 1. ROLES & PERMISSIONS
+-- ============================================================================
+-- Create Admin Role
+INSERT INTO roles (id, name, description, "isActive", "createdAt", "updatedAt")
+VALUES (gen_random_uuid(), 'ADMIN', 'System Administrator', true, NOW(), NOW())
+ON CONFLICT (name) DO NOTHING;
+
+-- ============================================================================
+-- 2. USERS
+-- ============================================================================
+-- Admin user (password: Admin@123)
+-- Password hash for 'Admin@123' using bcrypt
+INSERT INTO users (id, email, "firstName", "lastName", password, "isActive", "createdAt", "updatedAt")
+VALUES (
+    gen_random_uuid(),
+    'admin@erp.com',
+    'Admin',
+    'User',
+    '$2b$10$rQJ5YxF5YxF5YxF5YxF5YeMZj.wZj.wZj.wZj.wZj.wZj.wZj.wZj.w',
+    true,
+    NOW(),
+    NOW()
+)
+ON CONFLICT (email) DO NOTHING;
+
+-- Assign Admin role to admin user
+INSERT INTO user_roles (user_id, role_id)
+SELECT u.id, r.id
+FROM users u, roles r
+WHERE u.email = 'admin@erp.com' AND r.name = 'ADMIN'
+ON CONFLICT DO NOTHING;
+
+-- ============================================================================
+-- 3. WAREHOUSES (3 Major Distribution Centers)
+-- ============================================================================
+INSERT INTO warehouses (id, name, code, address, city, state, "postalCode", country, "totalCapacity", "isActive", "createdAt", "updatedAt")
+VALUES 
+    (
+        gen_random_uuid(),
+        'Main Distribution Center',
+        'WH001',
+        '123 Industrial Blvd',
+        'Chicago',
+        'IL',
+        '60601',
+        'USA',
+        10000,
+        true,
+        NOW(),
+        NOW()
+    ),
+    (
+        gen_random_uuid(),
+        'West Coast Facility',
+        'WH002',
+        '456 Commerce St',
+        'Los Angeles',
+        'CA',
+        '90001',
+        'USA',
+        8000,
+        true,
+        NOW(),
+        NOW()
+    ),
+    (
+        gen_random_uuid(),
+        'East Coast Hub',
+        'WH003',
+        '789 Logistics Ave',
+        'New York',
+        'NY',
+        '10001',
+        'USA',
+        6000,
+        true,
+        NOW(),
+        NOW()
+    );
+
+-- ============================================================================
+-- 4. PRODUCT CATEGORIES
+-- ============================================================================
+INSERT INTO categories (id, name, code, description, "isActive", "createdAt", "updatedAt")
+VALUES 
+    (gen_random_uuid(), 'Electronics', 'CAT001', 'Electronic devices and accessories', true, NOW(), NOW()),
+    (gen_random_uuid(), 'Clothing', 'CAT002', 'Apparel and fashion accessories', true, NOW(), NOW()),
+    (gen_random_uuid(), 'Home Goods', 'CAT003', 'Kitchen and home appliances', true, NOW(), NOW()),
+    (gen_random_uuid(), 'Sports Equipment', 'CAT004', 'Fitness and sports products', true, NOW(), NOW());
+
+-- ============================================================================
+-- 5. UNITS OF MEASURE
+-- ============================================================================
+INSERT INTO units_of_measure (id, name, abbreviation, description, "isActive", "createdAt", "updatedAt")
+VALUES 
+    (gen_random_uuid(), 'Piece', 'PCS', 'Individual item', true, NOW(), NOW()),
+    (gen_random_uuid(), 'Box', 'BOX', 'Box of items', true, NOW(), NOW()),
+    (gen_random_uuid(), 'Kilogram', 'KG', 'Weight in kilograms', true, NOW(), NOW()),
+    (gen_random_uuid(), 'Set', 'SET', 'Set of items', true, NOW(), NOW());
+
+-- ============================================================================
+-- 6. PRODUCTS (5 Core Products)
+-- ============================================================================
+INSERT INTO products (id, name, sku, description, "category_id", "uom_id", "unitPrice", "costPrice", "reorderPoint", "isActive", "createdAt", "updatedAt")
+SELECT 
+    gen_random_uuid(),
+    'Wireless Headphones',
+    'ELEC-WH-001',
+    'Premium wireless headphones with noise cancellation',
+    c.id,
+    u.id,
+    149.99,
+    89.99,
+    50,
+    true,
+    NOW(),
+    NOW()
+FROM categories c, units_of_measure u
+WHERE c.code = 'CAT001' AND u.abbreviation = 'PCS';
+
+INSERT INTO products (id, name, sku, description, "category_id", "uom_id", "unitPrice", "costPrice", "reorderPoint", "isActive", "createdAt", "updatedAt")
+SELECT 
+    gen_random_uuid(),
+    'Laptop Backpack',
+    'CLOTH-LB-002',
+    'Durable laptop backpack with multiple compartments',
+    c.id,
+    u.id,
+    59.99,
+    35.99,
+    30,
+    true,
+    NOW(),
+    NOW()
+FROM categories c, units_of_measure u
+WHERE c.code = 'CAT002' AND u.abbreviation = 'PCS';
+
+INSERT INTO products (id, name, sku, description, "category_id", "uom_id", "unitPrice", "costPrice", "reorderPoint", "isActive", "createdAt", "updatedAt")
+SELECT 
+    gen_random_uuid(),
+    'Coffee Maker',
+    'HOME-CM-003',
+    'Programmable 12-cup coffee maker',
+    c.id,
+    u.id,
+    89.99,
+    54.99,
+    25,
+    true,
+    NOW(),
+    NOW()
+FROM categories c, units_of_measure u
+WHERE c.code = 'CAT003' AND u.abbreviation = 'PCS';
+
+INSERT INTO products (id, name, sku, description, "category_id", "uom_id", "unitPrice", "costPrice", "reorderPoint", "isActive", "createdAt", "updatedAt")
+SELECT 
+    gen_random_uuid(),
+    'Yoga Mat',
+    'SPRT-YM-004',
+    'Non-slip exercise yoga mat with carrying strap',
+    c.id,
+    u.id,
+    29.99,
+    17.99,
+    40,
+    true,
+    NOW(),
+    NOW()
+FROM categories c, units_of_measure u
+WHERE c.code = 'CAT004' AND u.abbreviation = 'PCS';
+
+INSERT INTO products (id, name, sku, description, "category_id", "uom_id", "unitPrice", "costPrice", "reorderPoint", "isActive", "createdAt", "updatedAt")
+SELECT 
+    gen_random_uuid(),
+    'Smartphone Case',
+    'ELEC-SC-005',
+    'Protective smartphone case with card holder',
+    c.id,
+    u.id,
+    19.99,
+    11.99,
+    100,
+    true,
+    NOW(),
+    NOW()
+FROM categories c, units_of_measure u
+WHERE c.code = 'CAT001' AND u.abbreviation = 'PCS';
+
+-- ============================================================================
+-- 7. STOCK LEVELS (Current Inventory Distribution)
+-- ============================================================================
+-- Wireless Headphones (PROD001) - Total: 230 units
+INSERT INTO stock_levels (id, "product_id", "warehouse_id", quantity, "availableQuantity", "createdAt", "updatedAt")
+SELECT 
+    gen_random_uuid(),
+    p.id,
+    w.id,
+    150,
+    150,
+    NOW(),
+    NOW()
+FROM products p, warehouses w
+WHERE p.sku = 'ELEC-WH-001' AND w.code = 'WH001';
+
+INSERT INTO stock_levels (id, "product_id", "warehouse_id", quantity, "availableQuantity", "createdAt", "updatedAt")
+SELECT 
+    gen_random_uuid(),
+    p.id,
+    w.id,
+    80,
+    80,
+    NOW(),
+    NOW()
+FROM products p, warehouses w
+WHERE p.sku = 'ELEC-WH-001' AND w.code = 'WH002';
+
+-- Laptop Backpack (PROD002) - Total: 105 units
+INSERT INTO stock_levels (id, "product_id", "warehouse_id", quantity, "availableQuantity", "createdAt", "updatedAt")
+SELECT 
+    gen_random_uuid(),
+    p.id,
+    w.id,
+    45,
+    45,
+    NOW(),
+    NOW()
+FROM products p, warehouses w
+WHERE p.sku = 'CLOTH-LB-002' AND w.code = 'WH001';
+
+INSERT INTO stock_levels (id, "product_id", "warehouse_id", quantity, "availableQuantity", "createdAt", "updatedAt")
+SELECT 
+    gen_random_uuid(),
+    p.id,
+    w.id,
+    60,
+    60,
+    NOW(),
+    NOW()
+FROM products p, warehouses w
+WHERE p.sku = 'CLOTH-LB-002' AND w.code = 'WH003';
+
+-- Coffee Maker (PROD003) - Total: 65 units
+INSERT INTO stock_levels (id, "product_id", "warehouse_id", quantity, "availableQuantity", "createdAt", "updatedAt")
+SELECT 
+    gen_random_uuid(),
+    p.id,
+    w.id,
+    30,
+    30,
+    NOW(),
+    NOW()
+FROM products p, warehouses w
+WHERE p.sku = 'HOME-CM-003' AND w.code = 'WH002';
+
+INSERT INTO stock_levels (id, "product_id", "warehouse_id", quantity, "availableQuantity", "createdAt", "updatedAt")
+SELECT 
+    gen_random_uuid(),
+    p.id,
+    w.id,
+    35,
+    35,
+    NOW(),
+    NOW()
+FROM products p, warehouses w
+WHERE p.sku = 'HOME-CM-003' AND w.code = 'WH003';
+
+-- Yoga Mat (PROD004) - Total: 125 units
+INSERT INTO stock_levels (id, "product_id", "warehouse_id", quantity, "availableQuantity", "createdAt", "updatedAt")
+SELECT 
+    gen_random_uuid(),
+    p.id,
+    w.id,
+    75,
+    75,
+    NOW(),
+    NOW()
+FROM products p, warehouses w
+WHERE p.sku = 'SPRT-YM-004' AND w.code = 'WH001';
+
+INSERT INTO stock_levels (id, "product_id", "warehouse_id", quantity, "availableQuantity", "createdAt", "updatedAt")
+SELECT 
+    gen_random_uuid(),
+    p.id,
+    w.id,
+    50,
+    50,
+    NOW(),
+    NOW()
+FROM products p, warehouses w
+WHERE p.sku = 'SPRT-YM-004' AND w.code = 'WH002';
+
+-- Smartphone Case (PROD005) - Total: 320 units
+INSERT INTO stock_levels (id, "product_id", "warehouse_id", quantity, "availableQuantity", "createdAt", "updatedAt")
+SELECT 
+    gen_random_uuid(),
+    p.id,
+    w.id,
+    200,
+    200,
+    NOW(),
+    NOW()
+FROM products p, warehouses w
+WHERE p.sku = 'ELEC-SC-005' AND w.code = 'WH001';
+
+INSERT INTO stock_levels (id, "product_id", "warehouse_id", quantity, "availableQuantity", "createdAt", "updatedAt")
+SELECT 
+    gen_random_uuid(),
+    p.id,
+    w.id,
+    120,
+    120,
+    NOW(),
+    NOW()
+FROM products p, warehouses w
+WHERE p.sku = 'ELEC-SC-005' AND w.code = 'WH003';
+
+-- ============================================================================
+-- VERIFICATION QUERIES
+-- ============================================================================
+SELECT 'SEED COMPLETED SUCCESSFULLY!' as status;
+SELECT '================================' as separator;
+SELECT 'Users count:' as info, COUNT(*) as total FROM users;
+SELECT 'Warehouses count:' as info, COUNT(*) as total FROM warehouses;
+SELECT 'Categories count:' as info, COUNT(*) as total FROM categories;
+SELECT 'Units of Measure count:' as info, COUNT(*) as total FROM units_of_measure;
+SELECT 'Products count:' as info, COUNT(*) as total FROM products;
+SELECT 'Stock Levels count:' as info, COUNT(*) as total FROM stock_levels;
+
+-- Warehouse Capacity Summary
+SELECT 
+    w.name as warehouse,
+    w."totalCapacity" as capacity,
+    (SELECT COALESCE(SUM(quantity), 0) FROM stock_levels sl WHERE sl."warehouse_id" = w.id) as current_usage,
+    ROUND(((SELECT COALESCE(SUM(quantity), 0) FROM stock_levels sl WHERE sl."warehouse_id" = w.id)::decimal / w."totalCapacity") * 100, 2) as "usage_%"
+FROM warehouses w
+ORDER BY w.code;
+
+-- Inventory Summary by Product
+SELECT 
+    p.name as product,
+    p.sku,
+    SUM(sl.quantity) as total_stock,
+    p."reorderPoint" as reorder_level,
+    CASE 
+        WHEN SUM(sl.quantity) < p."reorderPoint" THEN 'REORDER NEEDED'
+        ELSE 'OK'
+    END as status
+FROM products p
+LEFT JOIN stock_levels sl ON p.id = sl."product_id"
+GROUP BY p.id, p.name, p.sku, p."reorderPoint"
+ORDER BY p.sku;
+
+-- Inventory Distribution by Warehouse
+SELECT 
+    w.name as warehouse,
+    p.name as product,
+    sl.quantity
+FROM stock_levels sl
+JOIN warehouses w ON sl."warehouse_id" = w.id
+JOIN products p ON sl."product_id" = p.id
+ORDER BY w.code, p.sku;
