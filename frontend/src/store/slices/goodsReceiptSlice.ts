@@ -1,8 +1,6 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
-
-// Hardcoded API URL for stability
-const API_URL = 'https://erp-backend-68v8.onrender.com/api';
+import { API_URL } from '../../config/api';
 
 interface GoodsReceipt {
     id: string;

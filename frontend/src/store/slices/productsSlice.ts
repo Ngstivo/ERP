@@ -1,8 +1,6 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
-
-// Hardcoded API URL for stability
-const API_URL = 'https://erp-backend-68v8.onrender.com/api';
+import { API_URL } from '../../config/api';
 
 interface Product {
     id: string;
@@ -44,8 +42,6 @@ export const createProduct = createAsyncThunk(
     'products/create',
     async (productData: Partial<Product>, { getState }) => {
         const state = getState() as any;
-        // Hardcoded API URL for stability
-        const API_URL = 'https://erp-backend-68v8.onrender.com/api';
         const response = await axios.post(`${API_URL}/products`, productData, {
             headers: { Authorization: `Bearer ${state.auth.token}` },
         });
