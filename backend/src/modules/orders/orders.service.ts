@@ -54,8 +54,10 @@ export class OrdersService {
         return await this.purchaseOrderRepository.save(order);
     }
 
+
     async remove(id: string): Promise<void> {
         const order = await this.findOne(id);
-        await this.purchaseOrderRepository.remove(order);
+        // Use delete instead of remove for proper cascade
+        await this.purchaseOrderRepository.delete(id);
     }
 }

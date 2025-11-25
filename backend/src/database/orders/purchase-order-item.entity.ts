@@ -15,7 +15,7 @@ export class PurchaseOrderItem {
     @PrimaryGeneratedColumn('uuid')
     id: string;
 
-    @ManyToOne(() => PurchaseOrder, (po) => po.items)
+    @ManyToOne(() => PurchaseOrder, (po) => po.items, { onDelete: 'CASCADE' })
     @JoinColumn({ name: 'purchase_order_id' })
     purchaseOrder: PurchaseOrder;
 
