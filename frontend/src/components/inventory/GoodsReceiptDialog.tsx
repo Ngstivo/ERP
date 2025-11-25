@@ -20,8 +20,7 @@ import axios from 'axios';
 import { useAppDispatch, useAppSelector } from '../../hooks/redux';
 import { createGoodsReceipt } from '../../store/slices/goodsReceiptSlice';
 import { fetchWarehouses } from '../../store/slices/warehousesSlice';
-
-const API_URL = 'https://erp-backend-68v8.onrender.com/api';
+import { API_URL } from '../../config/api';
 
 interface GoodsReceiptDialogProps {
     open: boolean;
