@@ -10,6 +10,8 @@ import {
 } from '@mui/material';
 import { Add } from '@mui/icons-material';
 import axios from 'axios';
+import { useAppDispatch, useAppSelector } from '../hooks/redux';
+import { fetchWarehouses } from '../store/slices/warehousesSlice';
 import WarehouseDialog from '../components/warehouse/WarehouseDialog';
 import { API_URL } from '../config/api';
 
