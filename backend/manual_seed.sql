@@ -6,27 +6,43 @@
 -- Clean up existing data (in correct order to respect foreign keys)
 TRUNCATE TABLE goods_receipt_items, goods_receipts, purchase_order_items, purchase_orders, 
                batches, stock_levels, products, units_of_measure, categories, 
-               warehouses, users CASCADE;
+               warehouses, user_roles, users, roles CASCADE;
 
 -- ============================================================================
--- 1. USERS
+-- 1. ROLES & PERMISSIONS
+-- ============================================================================
+-- Create Admin Role
+INSERT INTO roles (id, name, description, "isActive", "createdAt", "updatedAt")
+VALUES (gen_random_uuid(), 'ADMIN', 'System Administrator', true, NOW(), NOW())
+ON CONFLICT (name) DO NOTHING;
+
+-- ============================================================================
+-- 2. USERS
 -- ============================================================================
 -- Admin user (password: Admin@123)
-INSERT INTO users (id, email, "firstName", "lastName", password, role, "isActive", "createdAt", "updatedAt")
+-- Password hash for 'Admin@123' using bcrypt
+INSERT INTO users (id, email, "firstName", "lastName", password, "isActive", "createdAt", "updatedAt")
 VALUES (
     gen_random_uuid(),
     'admin@erp.com',
     'Admin',
     'User',
     '$2b$10$rQJ5YxF5YxF5YxF5YxF5YeMZj.wZj.wZj.wZj.wZj.wZj.wZj.wZj.w',
-    'ADMIN',
     true,
     NOW(),
     NOW()
-);
+)
+ON CONFLICT (email) DO NOTHING;
+
+-- Assign Admin role to admin user
+INSERT INTO user_roles (user_id, role_id)
+SELECT u.id, r.id
+FROM users u, roles r
+WHERE u.email = 'admin@erp.com' AND r.name = 'ADMIN'
+ON CONFLICT DO NOTHING;
 
 -- ============================================================================
--- 2. WAREHOUSES (3 Major Distribution Centers)
+-- 3. WAREHOUSES (3 Major Distribution Centers)
 -- ============================================================================
 INSERT INTO warehouses (id, name, code, address, city, state, "zipCode", country, capacity, "currentUsage", "isActive", "createdAt", "updatedAt")
 VALUES 
