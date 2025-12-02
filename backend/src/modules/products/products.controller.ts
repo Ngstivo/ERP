@@ -89,7 +89,7 @@ export class ProductsController {
         },
     })
     @UseInterceptors(FileInterceptor('file'))
-    async importCSV(@UploadedFile() file: Express.Multer.File) {
+    async importCSV(@UploadedFile() file: any) {
         if (!file) {
             throw new BadRequestException('No file uploaded');
         }
@@ -116,7 +116,7 @@ export class ProductsController {
         },
     })
     @UseInterceptors(FileInterceptor('file'))
-    async importExcel(@UploadedFile() file: Express.Multer.File) {
+    async importExcel(@UploadedFile() file: any) {
         if (!file) {
             throw new BadRequestException('No file uploaded');
         }

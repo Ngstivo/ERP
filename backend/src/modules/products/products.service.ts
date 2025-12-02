@@ -135,7 +135,7 @@ export class ProductsService {
     async importFromExcel(fileBuffer: Buffer): Promise<ImportResultDto> {
         try {
             const workbook = new ExcelJS.Workbook();
-            await workbook.xlsx.load(fileBuffer);
+            await workbook.xlsx.load(fileBuffer as any);
 
             const worksheet = workbook.getWorksheet(1);
             if (!worksheet) {
