@@ -7,6 +7,7 @@ import { Category } from '../entities/category.entity';
 import { UnitOfMeasure } from '../entities/unit-of-measure.entity';
 import { Product } from '../entities/product.entity';
 import { Warehouse } from '../entities/warehouse.entity';
+import { StockLevel } from '../inventory/stock-level.entity';
 import { StorageLocation, LocationType, ZoneType } from '../entities/storage-location.entity';
 
 const AppDataSource = new DataSource({
@@ -25,7 +26,35 @@ async function seed() {
 
     console.log('🌱 Starting database seed...');
 
-    // Create Permissions
+    // CLEANUP
+    console.log('🧹 Cleaning up existing data...');
+    const queryRunner = AppDataSource.createQueryRunner();
+    await queryRunner.connect();
+
+    try {
+        // Disable foreign key checks temporarily to allow truncation
+        // await queryRunner.query('SET session_replication_role = "replica";'); // Only for superusers
+
+        // Truncate tables in order
+        await queryRunner.query('TRUNCATE TABLE stock_levels CASCADE');
+        await queryRunner.query('TRUNCATE TABLE products CASCADE');
+        await queryRunner.query('TRUNCATE TABLE categories CASCADE');
+        await queryRunner.query('TRUNCATE TABLE units_of_measure CASCADE');
+        await queryRunner.query('TRUNCATE TABLE storage_locations CASCADE');
+        await queryRunner.query('TRUNCATE TABLE warehouses CASCADE');
+        await queryRunner.query('TRUNCATE TABLE user_roles CASCADE');
+        await queryRunner.query('TRUNCATE TABLE users CASCADE');
+        await queryRunner.query('TRUNCATE TABLE roles CASCADE');
+        await queryRunner.query('TRUNCATE TABLE permissions CASCADE');
+
+        // await queryRunner.query('SET session_replication_role = "origin";');
+    } catch (err) {
+        console.warn('⚠️ Cleanup warning (might be first run):', err.message);
+    } finally {
+        await queryRunner.release();
+    }
+
+    // 1. Create Permissions
     const permissionRepo = AppDataSource.getRepository(Permission);
     const permissions = await permissionRepo.save([
         { name: 'products:create', resource: 'products', action: 'create', description: 'Create products' },
@@ -40,227 +69,187 @@ async function seed() {
 
     console.log('✅ Created permissions');
 
-    // Create Roles
+    // 2. Create Roles
     const roleRepo = AppDataSource.getRepository(Role);
     const adminRole = await roleRepo.save({
-        name: 'Admin',
-        description: 'Full system access',
+        name: 'ADMIN',
+        description: 'System Administrator',
         permissions: permissions,
-    });
-
-    const managerRole = await roleRepo.save({
-        name: 'Manager',
-        description: 'Warehouse manager access',
-        permissions: permissions.filter(p => !p.name.includes('delete')),
-    });
-
-    const staffRole = await roleRepo.save({
-        name: 'Staff',
-        description: 'Warehouse staff access',
-        permissions: permissions.filter(p => p.action === 'read' || p.resource === 'inventory'),
+        isActive: true
     });
 
     console.log('✅ Created roles');
 
-    // Create Users
+    // 3. Create Users
     const userRepo = AppDataSource.getRepository(User);
-    await userRepo.save([
-        {
-            email: 'admin@erp.com',
-            firstName: 'Admin',
-            lastName: 'User',
-            password: await bcrypt.hash('Admin@123', 10),
-            roles: [adminRole],
-            isActive: true,
-        },
-        {
-            email: 'manager@erp.com',
-            firstName: 'Manager',
-            lastName: 'User',
-            password: await bcrypt.hash('Manager@123', 10),
-            roles: [managerRole],
-            isActive: true,
-        },
-        {
-            email: 'staff@erp.com',
-            firstName: 'Staff',
-            lastName: 'User',
-            password: await bcrypt.hash('Staff@123', 10),
-            roles: [staffRole],
-            isActive: true,
-        },
-    ]);
+    const adminUser = await userRepo.save({
+        email: 'admin@erp.com',
+        firstName: 'Admin',
+        lastName: 'User',
+        password: await bcrypt.hash('Admin@123', 10),
+        roles: [adminRole],
+        isActive: true,
+    });
 
     console.log('✅ Created users');
 
-    // Create Categories
-    const categoryRepo = AppDataSource.getRepository(Category);
-    const electronics = await categoryRepo.save({
-        name: 'Electronics',
-        code: 'ELEC',
-        description: 'Electronic devices and accessories',
-    });
-
-    const furniture = await categoryRepo.save({
-        name: 'Furniture',
-        code: 'FURN',
-        description: 'Office and home furniture',
-    });
-
-    const supplies = await categoryRepo.save({
-        name: 'Office Supplies',
-        code: 'SUPP',
-        description: 'General office supplies',
-    });
-
-    console.log('✅ Created categories');
-
-    // Create Units of Measure
-    const uomRepo = AppDataSource.getRepository(UnitOfMeasure);
-    const piece = await uomRepo.save({
-        name: 'Piece',
-        abbreviation: 'PC',
-        description: 'Individual pieces',
-    });
-
-    const box = await uomRepo.save({
-        name: 'Box',
-        abbreviation: 'BOX',
-        description: 'Boxed items',
-    });
-
-    console.log('✅ Created units of measure');
-
-    // Create Warehouses
+    // 4. Create Warehouses
     const warehouseRepo = AppDataSource.getRepository(Warehouse);
-    const mainWarehouse = await warehouseRepo.save({
-        code: 'WH-001',
-        name: 'Main Warehouse',
-        description: 'Primary storage facility',
+    const wh1 = await warehouseRepo.save({
+        code: 'WH001',
+        name: 'Main Distribution Center',
         address: '123 Industrial Blvd',
-        city: 'New York',
-        state: 'NY',
+        city: 'Chicago',
+        state: 'IL',
+        postalCode: '60601',
         country: 'USA',
-        postalCode: '10001',
-        phone: '+1-555-0100',
-        email: 'main@warehouse.com',
         totalCapacity: 10000,
         isActive: true,
     });
 
-    const secondaryWarehouse = await warehouseRepo.save({
-        code: 'WH-002',
-        name: 'Secondary Warehouse',
-        description: 'Overflow storage',
-        address: '456 Storage Ave',
+    const wh2 = await warehouseRepo.save({
+        code: 'WH002',
+        name: 'West Coast Facility',
+        address: '456 Commerce St',
         city: 'Los Angeles',
         state: 'CA',
-        country: 'USA',
         postalCode: '90001',
-        phone: '+1-555-0200',
-        email: 'secondary@warehouse.com',
-        totalCapacity: 5000,
+        country: 'USA',
+        totalCapacity: 8000,
+        isActive: true,
+    });
+
+    const wh3 = await warehouseRepo.save({
+        code: 'WH003',
+        name: 'East Coast Hub',
+        address: '789 Logistics Ave',
+        city: 'New York',
+        state: 'NY',
+        postalCode: '10001',
+        country: 'USA',
+        totalCapacity: 6000,
         isActive: true,
     });
 
     console.log('✅ Created warehouses');
 
-    // Create Storage Locations
-    const locationRepo = AppDataSource.getRepository(StorageLocation);
-    await locationRepo.save([
-        {
-            code: 'ZONE-A',
-            name: 'Zone A - Bulk Storage',
-            type: LocationType.ZONE,
-            zoneType: ZoneType.BULK,
-            warehouse: mainWarehouse,
-            capacity: 5000,
-            isActive: true,
-        },
-        {
-            code: 'ZONE-B',
-            name: 'Zone B - Picking Area',
-            type: LocationType.ZONE,
-            zoneType: ZoneType.PICKING,
-            warehouse: mainWarehouse,
-            capacity: 3000,
-            isActive: true,
-        },
-    ]);
+    // 5. Create Categories
+    const categoryRepo = AppDataSource.getRepository(Category);
+    const electronics = await categoryRepo.save({ name: 'Electronics', code: 'CAT001', description: 'Electronic devices and accessories' });
+    const clothing = await categoryRepo.save({ name: 'Clothing', code: 'CAT002', description: 'Apparel and fashion accessories' });
+    const homeGoods = await categoryRepo.save({ name: 'Home Goods', code: 'CAT003', description: 'Kitchen and home appliances' });
+    const sports = await categoryRepo.save({ name: 'Sports Equipment', code: 'CAT004', description: 'Fitness and sports products' });
 
-    console.log('✅ Created storage locations');
+    console.log('✅ Created categories');
 
-    // Create Products
+    // 6. Create Units of Measure
+    const uomRepo = AppDataSource.getRepository(UnitOfMeasure);
+    const pcs = await uomRepo.save({ name: 'Piece', abbreviation: 'PCS', description: 'Individual item' });
+    const box = await uomRepo.save({ name: 'Box', abbreviation: 'BOX', description: 'Box of items' });
+    const kg = await uomRepo.save({ name: 'Kilogram', abbreviation: 'KG', description: 'Weight in kilograms' });
+    const set = await uomRepo.save({ name: 'Set', abbreviation: 'SET', description: 'Set of items' });
+
+    console.log('✅ Created units of measure');
+
+    // 7. Create Products
     const productRepo = AppDataSource.getRepository(Product);
-    await productRepo.save([
-        {
-            sku: 'LAPTOP-001',
-            name: 'Business Laptop',
-            description: 'High-performance laptop for business use',
-            category: electronics,
-            unitOfMeasure: piece,
-            unitPrice: 999.99,
-            costPrice: 750.00,
-            reorderPoint: 10,
-            minStockLevel: 5,
-            maxStockLevel: 50,
-            isActive: true,
-        },
-        {
-            sku: 'DESK-001',
-            name: 'Office Desk',
-            description: 'Ergonomic office desk',
-            category: furniture,
-            unitOfMeasure: piece,
-            unitPrice: 299.99,
-            costPrice: 200.00,
-            reorderPoint: 5,
-            minStockLevel: 2,
-            maxStockLevel: 20,
-            isActive: true,
-        },
-        {
-            sku: 'PEN-001',
-            name: 'Ballpoint Pens',
-            description: 'Box of 50 ballpoint pens',
-            category: supplies,
-            unitOfMeasure: box,
-            unitPrice: 9.99,
-            costPrice: 5.00,
-            reorderPoint: 20,
-            minStockLevel: 10,
-            maxStockLevel: 100,
-            isActive: true,
-        },
-        {
-            sku: 'MONITOR-001',
-            name: '27" Monitor',
-            description: '27-inch LED monitor',
-            category: electronics,
-            unitOfMeasure: piece,
-            unitPrice: 349.99,
-            costPrice: 250.00,
-            reorderPoint: 8,
-            minStockLevel: 4,
-            maxStockLevel: 30,
-            isActive: true,
-        },
-        {
-            sku: 'CHAIR-001',
-            name: 'Office Chair',
-            description: 'Ergonomic office chair',
-            category: furniture,
-            unitOfMeasure: piece,
-            unitPrice: 199.99,
-            costPrice: 120.00,
-            reorderPoint: 10,
-            minStockLevel: 5,
-            maxStockLevel: 40,
-            isActive: true,
-        },
-    ]);
+
+    const p1 = await productRepo.save({
+        name: 'Wireless Headphones',
+        sku: 'ELEC-WH-001',
+        description: 'Premium wireless headphones with noise cancellation',
+        category: electronics,
+        unitOfMeasure: pcs,
+        unitPrice: 149.99,
+        costPrice: 89.99,
+        reorderPoint: 50,
+        isActive: true,
+    });
+
+    const p2 = await productRepo.save({
+        name: 'Laptop Backpack',
+        sku: 'CLOTH-LB-002',
+        description: 'Durable laptop backpack with multiple compartments',
+        category: clothing,
+        unitOfMeasure: pcs,
+        unitPrice: 59.99,
+        costPrice: 35.99,
+        reorderPoint: 30,
+        isActive: true,
+    });
+
+    const p3 = await productRepo.save({
+        name: 'Coffee Maker',
+        sku: 'HOME-CM-003',
+        description: 'Programmable 12-cup coffee maker',
+        category: homeGoods,
+        unitOfMeasure: pcs,
+        unitPrice: 89.99,
+        costPrice: 54.99,
+        reorderPoint: 25,
+        isActive: true,
+    });
+
+    const p4 = await productRepo.save({
+        name: 'Yoga Mat',
+        sku: 'SPRT-YM-004',
+        description: 'Non-slip exercise yoga mat with carrying strap',
+        category: sports,
+        unitOfMeasure: pcs,
+        unitPrice: 29.99,
+        costPrice: 17.99,
+        reorderPoint: 40,
+        isActive: true,
+    });
+
+    const p5 = await productRepo.save({
+        name: 'Smartphone Case',
+        sku: 'ELEC-SC-005',
+        description: 'Protective smartphone case with card holder',
+        category: electronics,
+        unitOfMeasure: pcs,
+        unitPrice: 19.99,
+        costPrice: 11.99,
+        reorderPoint: 100,
+        isActive: true,
+    });
 
     console.log('✅ Created products');
+
+    // 8. Create Stock Levels
+    const stockLevelRepo = AppDataSource.getRepository(StockLevel);
+
+    // Wireless Headphones (230 units)
+    await stockLevelRepo.save([
+        { product: p1, warehouse: wh1, quantity: 150, availableQuantity: 150 },
+        { product: p1, warehouse: wh2, quantity: 80, availableQuantity: 80 },
+    ]);
+
+    // Laptop Backpack (105 units)
+    await stockLevelRepo.save([
+        { product: p2, warehouse: wh1, quantity: 45, availableQuantity: 45 },
+        { product: p2, warehouse: wh3, quantity: 60, availableQuantity: 60 },
+    ]);
+
+    // Coffee Maker (65 units)
+    await stockLevelRepo.save([
+        { product: p3, warehouse: wh2, quantity: 30, availableQuantity: 30 },
+        { product: p3, warehouse: wh3, quantity: 35, availableQuantity: 35 },
+    ]);
+
+    // Yoga Mat (125 units)
+    await stockLevelRepo.save([
+        { product: p4, warehouse: wh1, quantity: 75, availableQuantity: 75 },
+        { product: p4, warehouse: wh2, quantity: 50, availableQuantity: 50 },
+    ]);
+
+    // Smartphone Case (320 units)
+    await stockLevelRepo.save([
+        { product: p5, warehouse: wh1, quantity: 200, availableQuantity: 200 },
+        { product: p5, warehouse: wh3, quantity: 120, availableQuantity: 120 },
+    ]);
+
+    console.log('✅ Created stock levels');
 
     console.log('🎉 Database seed completed successfully!');
     await AppDataSource.destroy();

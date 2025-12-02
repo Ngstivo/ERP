@@ -1,0 +1,4 @@
+sku,name,description,categoryCode,uomAbbreviation,unitPrice,costPrice,reorderPoint
+TEST-001,Test Laptop,High-performance business laptop,CAT001,PCS,1299.99,899.00,5
+TEST-002,Office Chair,Ergonomic office chair with lumbar support,CAT003,PCS,349.99,199.00,10
+TEST-003,Running Shoes,Professional running shoes,CAT004,PCS,129.99,75.00,15
