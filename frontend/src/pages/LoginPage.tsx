@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import {
     Box,
     Card,
@@ -85,6 +86,21 @@ export default function LoginPage() {
                             </Button>
                         </form>
 
+                        <Box sx={{ textAlign: 'center', mt: 2 }}>
+                            <Typography variant="body2" color="text.secondary">
+                                Don't have an account?{' '}
+                                <Link
+                                    to="/signup"
+                                    style={{
+                                        color: '#667eea',
+                                        textDecoration: 'none',
+                                        fontWeight: 600
+                                    }}
+                                >
+                                    Sign Up
+                                </Link>
+                            </Typography>
+                        </Box>
 
                     </CardContent>
                 </Card>

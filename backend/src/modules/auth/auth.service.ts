@@ -88,9 +88,9 @@ export class AuthService {
 
         const hashedPassword = await bcrypt.hash(registerDto.password, 10);
 
-        // Find default role (Manager)
+        // Find default role (USER)
         const defaultRole = await this.roleRepository.findOne({
-            where: { name: 'Manager' },
+            where: { name: 'USER' },
         });
 
         const user = this.userRepository.create({
