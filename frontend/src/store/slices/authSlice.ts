@@ -34,6 +34,14 @@ export const login = createAsyncThunk(
     }
 );
 
+export const register = createAsyncThunk(
+    'auth/register',
+    async (userData: { email: string; password: string; firstName: string; lastName: string }) => {
+        const response = await axios.post(`${API_URL}/auth/register`, userData);
+        return response.data;
+    }
+);
+
 export const getProfile = createAsyncThunk('auth/profile', async (_, { getState }) => {
     const state = getState() as { auth: AuthState };
     const response = await axios.get(`${API_URL}/auth/profile`, {
@@ -75,6 +83,21 @@ const authSlice = createSlice({
             .addCase(login.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.error.message || 'Login failed';
+            })
+            .addCase(register.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(register.fulfilled, (state, action) => {
+                state.loading = false;
+                state.user = action.payload.user;
+                state.token = action.payload.access_token;
+                state.isAuthenticated = true;
+                localStorage.setItem('token', action.payload.access_token);
+            })
+            .addCase(register.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.error.message || 'Registration failed';
             })
             .addCase(getProfile.fulfilled, (state, action) => {
                 state.user = action.payload;

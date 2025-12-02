@@ -4,6 +4,7 @@ import { useAppDispatch, useAppSelector } from './hooks/redux';
 import { getProfile } from './store/slices/authSlice';
 import Layout from './components/layout/Layout';
 import LoginPage from './pages/LoginPage';
+import SignupPage from './pages/SignupPage';
 import DashboardPage from './pages/DashboardPage';
 import ProductsPage from './pages/ProductsPage';
 import WarehousesPage from './pages/WarehousesPage';
@@ -29,6 +30,7 @@ function App() {
         return (
             <Routes>
                 <Route path="/login" element={<LoginPage />} />
+                <Route path="/signup" element={<SignupPage />} />
                 <Route path="*" element={<Navigate to="/login" replace />} />
             </Routes>
         );

@@ -85,17 +85,7 @@ export default function LoginPage() {
                             </Button>
                         </form>
 
-                        <Box sx={{ mt: 3, p: 2, bgcolor: 'grey.100', borderRadius: 1 }}>
-                            <Typography variant="caption" display="block" gutterBottom fontWeight={600}>
-                                Demo Credentials:
-                            </Typography>
-                            <Typography variant="caption" display="block">
-                                Admin: admin@erp.com / Admin@123
-                            </Typography>
-                            <Typography variant="caption" display="block">
-                                Manager: manager@erp.com / Manager@123
-                            </Typography>
-                        </Box>
+
                     </CardContent>
                 </Card>
             </Container>

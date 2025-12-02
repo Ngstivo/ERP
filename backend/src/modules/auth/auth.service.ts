@@ -88,15 +88,40 @@ export class AuthService {
 
         const hashedPassword = await bcrypt.hash(registerDto.password, 10);
 
+        // Find default role (Manager)
+        const defaultRole = await this.roleRepository.findOne({
+            where: { name: 'Manager' },
+        });
+
         const user = this.userRepository.create({
             ...registerDto,
             password: hashedPassword,
+            roles: defaultRole ? [defaultRole] : [],
+            isActive: true,
         });
 
         await this.userRepository.save(user);
 
-        const { password, ...result } = user;
-        return result;
+        // Generate token for auto-login
+        const payload = {
+            sub: user.id,
+            email: user.email,
+            roles: user.roles.map((role) => role.name),
+            permissions: user.roles.flatMap((role) =>
+                role.permissions ? role.permissions.map((p) => `${p.resource}:${p.action}`) : [],
+            ),
+        };
+
+        return {
+            access_token: this.jwtService.sign(payload),
+            user: {
+                id: user.id,
+                email: user.email,
+                firstName: user.firstName,
+                lastName: user.lastName,
+                roles: user.roles.map((role) => role.name),
+            },
+        };
     }
 
     async getProfile(userId: string) {
