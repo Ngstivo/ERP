@@ -1,0 +1,4 @@
+sku,name,description,categoryCode,uomAbbreviation,unitPrice,costPrice,reorderPoint
+PROD-001,Laptop Computer,High-performance business laptop,ELEC,PCS,999.99,599.99,10
+PROD-002,Office Chair,Ergonomic office chair with lumbar support,FURN,PCS,299.99,150.00,5
+PROD-003,Notebook A4,Professional ruled notebook,STAT,PCS,4.99,2.50,50

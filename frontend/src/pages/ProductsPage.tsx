@@ -14,11 +14,12 @@ import {
     Chip,
     CircularProgress,
 } from '@mui/material';
-import { Add } from '@mui/icons-material';
+import { Add, Upload } from '@mui/icons-material';
 import axios from 'axios';
 import { useAppDispatch, useAppSelector } from '../hooks/redux';
 import { fetchProducts } from '../store/slices/productsSlice';
 import ProductDialog from '../components/inventory/ProductDialog';
+import ProductImportDialog from '../components/inventory/ProductImportDialog';
 import { showSuccess, showError, showWarning } from '../utils/toast';
 import { API_URL } from '../config/api';
 
@@ -27,6 +28,7 @@ export default function ProductsPage() {
     const { products, loading } = useAppSelector((state) => state.products);
     const { token } = useAppSelector((state) => state.auth);
     const [openDialog, setOpenDialog] = useState(false);
+    const [openImportDialog, setOpenImportDialog] = useState(false);
     const [editingProduct, setEditingProduct] = useState<any>(null);
 
     useEffect(() => {
@@ -58,6 +60,10 @@ export default function ProductsPage() {
         setEditingProduct(null);
     };
 
+    const handleImportComplete = () => {
+        dispatch(fetchProducts());
+    };
+
     if (loading) {
         return (
             <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
@@ -77,9 +83,14 @@ export default function ProductsPage() {
                         Manage your product catalog
                     </Typography>
                 </Box>
-                <Button variant="contained" startIcon={<Add />} onClick={() => setOpenDialog(true)}>
-                    Add Product
-                </Button>
+                <Box sx={{ display: 'flex', gap: 2 }}>
+                    <Button variant="outlined" startIcon={<Upload />} onClick={() => setOpenImportDialog(true)}>
+                        Import Products
+                    </Button>
+                    <Button variant="contained" startIcon={<Add />} onClick={() => setOpenDialog(true)}>
+                        Add Product
+                    </Button>
+                </Box>
             </Box>
 
             <Card>
@@ -156,6 +167,12 @@ export default function ProductsPage() {
                 open={openDialog}
                 onClose={handleCloseDialog}
                 product={editingProduct}
+            />
+
+            <ProductImportDialog
+                open={openImportDialog}
+                onClose={() => setOpenImportDialog(false)}
+                onImportComplete={handleImportComplete}
             />
         </Box>
     );
