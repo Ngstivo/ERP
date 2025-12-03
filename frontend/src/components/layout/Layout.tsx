@@ -76,7 +76,7 @@ export default function Layout({ children }: LayoutProps) {
         <Box>
             <Toolbar>
                 <Typography variant="h6" noWrap component="div" sx={{ fontWeight: 700 }}>
-                    ERP System
+                    WMS
                 </Typography>
             </Toolbar>
             <Divider />

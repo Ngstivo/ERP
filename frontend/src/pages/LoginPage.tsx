@@ -41,10 +41,10 @@ export default function LoginPage() {
                         <Box sx={{ textAlign: 'center', mb: 3 }}>
                             <LockOutlined sx={{ fontSize: 48, color: 'primary.main', mb: 2 }} />
                             <Typography variant="h4" gutterBottom fontWeight={600}>
-                                ERP System
+                                Warehouse Management System
                             </Typography>
                             <Typography variant="body2" color="text.secondary">
-                                Inventory & Warehouse Management
+                                Inventory & Warehouse Operations
                             </Typography>
                         </Box>
 

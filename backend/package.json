@@ -1,7 +1,7 @@
 {
-  "name": "erp-backend",
+  "name": "wms-backend",
   "version": "1.0.0",
-  "description": "ERP Inventory & Warehouse Management System - Backend API",
+  "description": "Warehouse Management System - Backend API",
   "author": "Your Company",
   "private": true,
   "license": "MIT",

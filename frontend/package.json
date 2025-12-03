@@ -1,7 +1,7 @@
 {
-    "name": "erp-frontend",
+    "name": "wms-frontend",
     "version": "1.0.0",
-    "description": "ERP Inventory & Warehouse Management System - Frontend",
+    "description": "Warehouse Management System - Frontend Application",
     "type": "module",
     "scripts": {
         "dev": "vite",

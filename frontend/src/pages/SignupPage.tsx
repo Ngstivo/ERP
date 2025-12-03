@@ -39,7 +39,7 @@ const SignupPage = () => {
                         <UserPlus className="w-8 h-8 text-blue-600" />
                     </div>
                     <h2 className="text-2xl font-bold text-gray-900">Create an Account</h2>
-                    <p className="text-gray-500 mt-2">Join us to manage your ERP system</p>
+                    <p className="text-gray-500 mt-2">Join us to manage your warehouse operations</p>
                 </div>
 
                 <form onSubmit={handleSubmit} className="space-y-6">
